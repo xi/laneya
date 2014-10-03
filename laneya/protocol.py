@@ -28,11 +28,9 @@ class JSONProtocol(NetstringReceiver):
         raise NotImplementedError
 
     def stringReceived(self, s):
-        print(s)
         return self.jsonReceived(json.loads(s))
 
     def sendJSON(self, data):
-        print(data)
         return self.sendString(json.dumps(data))
 
 
@@ -79,7 +77,6 @@ class Protocol(JSONProtocol):
             log.err('Message type not known: %s' % message['type'])
 
     def sendRequest(self, command, **kwargs):
-        print("sendRequest")
         data = {
             'type': 'request',
             'key': generate_key(),

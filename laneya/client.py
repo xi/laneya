@@ -17,9 +17,7 @@ class ClientProtocol(protocol.Protocol):
         print(command, kwargs)
 
 
-def connected(protocol):
-    print('connected')
-
+def connected(protocol):  # TODO
     protocol.sendRequest('echo', foo='bar')\
         .then(_print)
 
@@ -31,8 +29,7 @@ def main():
     log.startLogging(sys.stdout)
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 5001)
     endpoint.connect(Factory.forProtocol(ClientProtocol))\
-        .addCallback(connected)\
-        .addErrback(_print)
+        .addCallback(connected)
     reactor.run()
 
 
