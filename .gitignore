@@ -1,0 +1,8 @@
+*~
+*.swp
+*.swo
+*.pyc
+.env
+.tox
+*.egg-info
+*-orig
