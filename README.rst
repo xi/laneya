@@ -13,7 +13,7 @@ Execute the following commands::
   . .env/bin/activate
   python setup.py develop
 
-This will setup a development environment and install all laneya including all
+This will setup a development environment and install laneya including all
 dependencies into it. You can activate the virtual environment anytime by
 calling::
 
