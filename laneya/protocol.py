@@ -66,11 +66,15 @@ class Protocol(JSONProtocol):
         elif message['type'] == 'response':
             key = message['key']
             if key in self._responseDeferreds:
+                response = {
+                    'status': message['status'],
+                    'data': message['data'],
+                }
                 d = self._responseDeferreds.pop(key)
                 if message['status'] == 'success':
-                    d.resolve(message)
+                    d.resolve(response)
                 else:
-                    d.reject(message)
+                    d.reject(response)
         elif message['type'] == 'update':
             self.updateReceived(message['command'], **message['data'])
         else:
