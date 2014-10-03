@@ -15,6 +15,10 @@ setup(
     install_requires=[
         'twisted',
     ],
+    entry_points={'console_scripts': [
+        'laneya=laneya.client:main',
+        'laneyad=laneya.server:main',
+    ]},
     license='GPLv2+',
     classifiers=[
         'Development Status :: 1 - Planning',
