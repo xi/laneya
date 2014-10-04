@@ -187,6 +187,7 @@ class Protocol(JSONProtocol):
         }
         self.sendJSON(data)
 
+        # TODO: d should be rejected after a timeout
         d = q.Deferred()
         self._responseDeferreds[data['key']] = d
         return d.promise
