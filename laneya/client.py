@@ -38,7 +38,8 @@ def main():
     log.startLogging(sys.stdout)
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 5001)
     endpoint.connect(Factory.forProtocol(ClientProtocol))\
-        .addCallback(connected)
+        .addCallback(connected)\
+        .addErrback(log.err)
     reactor.run()
 
 
