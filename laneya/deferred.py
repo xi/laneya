@@ -48,7 +48,7 @@ class Deferred(object):
             for d, callback, errback in self.promise._children:
                 if status == RESOLVED:
                     callback(value).then(d.resolve, d.reject)
-                elif status == REJECTED:
+                else:  # rejected
                     errback(value).then(d.resolve, d.reject)
         else:
             raise AlreadyDoneError
@@ -92,6 +92,10 @@ class Promise(object):
             d = Deferred()
             self._children.append((d, _callback, _errback))
             return d.promise
+
+    def _raise(self):
+        if self._status == REJECTED and isinstance(self._value, Exception):
+            raise self._value
 
 
 def when(value=None):
@@ -140,58 +144,10 @@ def all(*promises):
             data['count'] -= 1
 
             if data['count'] == 0:
-                try:
-                    d.resolve(data['results'])
-                except AlreadyDoneError:
-                    pass
+                d.resolve(data['results'])
         return success
 
     for i, promise in enumerate(promises):
         promise.then(success_factory(i), d.reject)
 
     return d.promise
-
-
-if __name__ == '__main__':
-    def expect_factory(expected):
-        def expect(actual):
-            if actual == expected:
-                print(actual)
-            else:
-                print("%s != %s" % (actual, expected))
-        return expect
-
-    def fail(error):
-        raise Exception('fail')
-
-    d = Deferred()
-    d.resolve('huhu1')
-    d.promise.then(expect_factory('huhu1'), fail)
-
-    d = Deferred()
-    d.promise.then(expect_factory('huhu2'), fail)
-    d.resolve('huhu2')
-
-    d = Deferred()
-    d.reject('huhu3')
-    d.promise.then(fail, expect_factory('huhu3'))
-
-    d = Deferred()
-    d.promise.then(fail, expect_factory('huhu4'))
-    d.reject('huhu4')
-
-    d = Deferred()
-    d.reject('huhu5')
-    d.promise.then(fail).then(fail, expect_factory('huhu5'))
-
-    d = Deferred()
-    d.reject('huhu6')
-    d.promise.then(fail, when).then(expect_factory('huhu6'), fail)
-
-    when('huhu7').then(expect_factory('huhu7'), fail)
-
-    when(when('huhu8')).then(expect_factory('huhu8'), fail)
-
-    reject('huhu9').then(fail, expect_factory('huhu9'))
-
-    when(reject('huhu10')).then(fail, expect_factory('huhu10'))
