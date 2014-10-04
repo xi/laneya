@@ -197,7 +197,7 @@ class Protocol(JSONProtocol):
 
         d = q.Deferred()
         self._responseDeferreds[data['key']] = d
-        reactor.callLater(10, self._timeout(d, data['key']))
+        reactor.callLater(10, lambda: self._timeout(d, data['key']))
         return d.promise
 
     def _sendResponse(self, key, status, **kwargs):
