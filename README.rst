@@ -22,6 +22,7 @@ calling::
 laneya consists of two programs: A server called ``laneyad`` and a client
 called ``laneya``.
 
+
 Build Documentation
 -------------------
 
@@ -35,6 +36,25 @@ An HTML documentation can be automatically generated from source code using
 To add a new module to the documentation, create a corresponding file in
 ``docs/source/`` and add an entry to the table of contents in
 ``docs/source/index.rst``.
+
+
+Run Tests
+---------
+
+You can automatically run all tests via tox::
+
+  pip install tox
+  tox
+
+This will setup virtual environments for multiple versions of python and run
+all tests with each of these versions.
+
+Alternatively you can run the tests manually::
+
+  pip install flake8 nose coverage
+  flake8
+  nosetests
+  xdg-open .cover/index.html
 
 
 .. _sphinx: http://sphinx-doc.org
