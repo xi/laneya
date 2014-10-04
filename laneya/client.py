@@ -13,11 +13,20 @@ def _print(s):
 
 
 class ClientProtocol(protocol.Protocol):
+    def setup(self, user):
+        self.user = user
+
+    def sendRequest(self, action, **kwargs):
+        return protocol.Protocol.sendRequest(
+            self, self.user, action, **kwargs)
+
     def updateReceived(self, action, **kwargs):  # TODO
         print(action, kwargs)
 
 
 def connected(protocol):  # TODO
+    protocol.setup('testuser')
+
     protocol.sendRequest('echo', foo='bar')\
         .then(_print)
 

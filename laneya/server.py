@@ -24,7 +24,7 @@ class ServerProtocol(protocol.Protocol):
         for connection in self.factory.connections:
             connection.sendUpdate(action, **kwargs)
 
-    def requestReceived(self, action, **kwargs):  # TODO
+    def requestReceived(self, user, action, **kwargs):  # TODO
         if action == 'echo':
             return kwargs
         else:

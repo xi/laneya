@@ -109,7 +109,7 @@ class Protocol(JSONProtocol):
     def __init__(self):
         self._responseDeferreds = {}
 
-    def requestReceived(self, action, **kwargs):
+    def requestReceived(self, user, action, **kwargs):
         """Overwrite this on the server implementation."""
         raise NotImplementedError
 
@@ -117,9 +117,9 @@ class Protocol(JSONProtocol):
         """Overwrite this on the client implementation."""
         raise NotImplementedError
 
-    def _requestReceived(self, key, action, **data):
+    def _requestReceived(self, key, user, action, **data):
         try:
-            response = self.requestReceived(action, **data)
+            response = self.requestReceived(user, action, **data)
         except InvalidError as err:
             return self._sendResponse(key, 'invalid', message=str(err))
         except IllegalError as err:
@@ -145,10 +145,12 @@ class Protocol(JSONProtocol):
 
     def jsonReceived(self, message):
         if message['type'] == 'request':
-            self.validate_message(message, ['action', 'data', 'key', 'type'])
+            self.validate_message(
+                message, ['action', 'data', 'key', 'type', 'user'])
             self.validate_action(message['action'], message['data'])
             self._requestReceived(
                 message['key'],
+                message['user'],
                 message['action'],
                 **message['data'])
 
@@ -174,11 +176,12 @@ class Protocol(JSONProtocol):
         else:
             log.err('Message type not known: %s' % message['type'])
 
-    def sendRequest(self, action, **kwargs):
+    def sendRequest(self, user, action, **kwargs):
         """Send a request and get a promise yielding the response."""
         data = {
             'type': 'request',
             'key': generate_key(),
+            'user': user,
             'action': action,
             'data': kwargs,
         }
