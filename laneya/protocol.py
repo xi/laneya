@@ -108,17 +108,17 @@ class Protocol(JSONProtocol):
     def __init__(self):
         self._responseDeferreds = {}
 
-    def requestReceived(self, command, **kwargs):
+    def requestReceived(self, action, **kwargs):
         """Overwrite this on the server implementation."""
         raise NotImplementedError
 
-    def updateReceived(self, command, **kwargs):
+    def updateReceived(self, action, **kwargs):
         """Overwrite this on the client implementation."""
         raise NotImplementedError
 
-    def _requestReceived(self, key, command, **data):
+    def _requestReceived(self, key, action, **data):
         try:
-            response = self.requestReceived(command, **data)
+            response = self.requestReceived(action, **data)
         except InvalidError as err:
             return self._sendResponse(key, 'invalid', message=str(err))
         except IllegalError as err:
@@ -133,7 +133,7 @@ class Protocol(JSONProtocol):
         if message['type'] == 'request':
             self._requestReceived(
                 message['key'],
-                message['command'],
+                message['action'],
                 **message['data'])
         elif message['type'] == 'response':
             key = message['key']
@@ -148,16 +148,16 @@ class Protocol(JSONProtocol):
                 else:
                     d.reject(response)
         elif message['type'] == 'update':
-            self.updateReceived(message['command'], **message['data'])
+            self.updateReceived(message['action'], **message['data'])
         else:
             log.err('Message type not known: %s' % message['type'])
 
-    def sendRequest(self, command, **kwargs):
+    def sendRequest(self, action, **kwargs):
         """Send a request and get a promise yielding the response."""
         data = {
             'type': 'request',
             'key': generate_key(),
-            'command': command,
+            'action': action,
             'data': kwargs,
         }
         self.sendJSON(data)
@@ -175,11 +175,11 @@ class Protocol(JSONProtocol):
         }
         self.sendJSON(data)
 
-    def sendUpdate(self, command, **kwargs):
+    def sendUpdate(self, action, **kwargs):
         """Send an update."""
         data = {
             'type': 'update',
-            'command': command,
+            'action': action,
             'data': kwargs,
         }
         self.sendJSON(data)

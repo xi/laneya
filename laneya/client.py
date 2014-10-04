@@ -13,8 +13,8 @@ def _print(s):
 
 
 class ClientProtocol(protocol.Protocol):
-    def updateReceived(self, command, **kwargs):  # TODO
-        print(command, kwargs)
+    def updateReceived(self, action, **kwargs):  # TODO
+        print(action, kwargs)
 
 
 def connected(protocol):  # TODO

@@ -18,17 +18,17 @@ class ServerProtocol(protocol.Protocol):
     def connectionLost(self, reason):
         self.factory.connections.remove(self)
 
-    def broadcastUpdate(self, command, **kwargs):
+    def broadcastUpdate(self, action, **kwargs):
         """Broadcast an update to all connected clients."""
 
         for connection in self.factory.connections:
-            connection.sendUpdate(command, **kwargs)
+            connection.sendUpdate(action, **kwargs)
 
-    def requestReceived(self, command, **kwargs):  # TODO
-        if command == 'echo':
+    def requestReceived(self, action, **kwargs):  # TODO
+        if action == 'echo':
             return kwargs
         else:
-            self.broadcastUpdate(command, **kwargs)
+            self.broadcastUpdate(action, **kwargs)
             return {}
 
 
