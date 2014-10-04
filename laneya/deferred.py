@@ -72,7 +72,7 @@ class Promise(object):
     def then(self, callback, errback=None):
         """Register callbacks.
 
-        The registered callbacks will be executes as soon as the associated
+        The registered callbacks will be executed as soon as the associated
         deferred has either been resolved or rejected.  If it already has been,
         the corresponding callback is executed immediately.
 
