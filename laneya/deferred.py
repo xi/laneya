@@ -30,7 +30,7 @@ class Deferred(object):
     def __init__(self):
         self.promise = Promise()
 
-    def resolve(self, value, status=RESOLVED):
+    def resolve(self, value, silent=False, status=RESOLVED):
         """Resolve the deferred.
 
         All success callbacks that are registered on the promise will be
@@ -50,17 +50,17 @@ class Deferred(object):
                     callback(value).then(d.resolve, d.reject)
                 else:  # rejected
                     errback(value).then(d.resolve, d.reject)
-        else:
+        elif not silent:
             raise AlreadyDoneError
 
-    def reject(self, value):
+    def reject(self, value, silent=False):
         """Reject the deferred.
 
         Works execatly like :py:meth:`resolve`, only that it triggers the
         execution of error callbacks.
 
         """
-        return self.resolve(value, status=REJECTED)
+        return self.resolve(value, silent=silent, status=REJECTED)
 
 
 class Promise(object):
