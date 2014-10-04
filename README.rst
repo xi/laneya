@@ -8,7 +8,7 @@ Setup development environment
 
 Execute the following commands::
 
-  sudo apt-get install python python-virtualenv`
+  sudo apt-get install python python-virtualenv
   virtualenv .env
   . .env/bin/activate
   python setup.py develop
