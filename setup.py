@@ -1,6 +1,4 @@
 from setuptools import setup
-from distutils.command.build import build
-from setuptools.command.install_lib import install_lib
 
 
 setup(
