@@ -42,22 +42,22 @@ Update
     Actions should be as simple as possible to keep the protocol robust.  Some
     things you might think about:
 
-    -   An action should be *idempotent*:  Sending a message twice should have the
-        same effect as sending it only one time.  This way it can simply be resend
-        if a response has not been received within a specified timeout.
+    -   An action should be *idempotent*:  Sending a message twice should have
+        the same effect as sending it only one time.  This way it can simply be
+        resend if a response has not been received within a specified timeout.
 
-    -   An action should not depend on being send in the right order.  The server
-        should however provide a way to send multiple actions in one request
-        that are processed in order.
+    -   An action should not depend on being send in the right order.  The
+        server should however provide a way to send multiple actions in one
+        request that are processed in order.
 
-    -   The protocol should be *stateless*.  For example, the client should send
-        its userID with every request instead of having the server store it with
-        the connection.
+    -   The protocol should be *stateless*.  For example, the client should
+        send its userID with every request instead of having the server store
+        it with the connection.
 
 .. Note::
 
-    This module implements only the basic structure described above.  The actual
-    actions need to be defined and implemented on top of this.
+    This module implements only the basic structure described above.  The
+    actual actions need to be defined and implemented on top of this.
 
 """
 
