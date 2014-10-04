@@ -66,6 +66,7 @@ import json
 
 from twisted.python import log
 from twisted.protocols.basic import NetstringReceiver
+from twisted.internet import reactor
 
 import deferred as q
 import actions
@@ -176,6 +177,13 @@ class Protocol(JSONProtocol):
         else:
             log.err('Message type not known: %s' % message['type'])
 
+    def _timeout(self, d, key):
+        try:
+            d.reject('timeout', silent=True)
+            del self._responseDeferreds[key]
+        except KeyError:
+            pass
+
     def sendRequest(self, user, action, **kwargs):
         """Send a request and get a promise yielding the response."""
         data = {
@@ -187,9 +195,9 @@ class Protocol(JSONProtocol):
         }
         self.sendJSON(data)
 
-        # TODO: d should be rejected after a timeout
         d = q.Deferred()
         self._responseDeferreds[data['key']] = d
+        reactor.callLater(10, self._timeout(d, data['key']))
         return d.promise
 
     def _sendResponse(self, key, status, **kwargs):
