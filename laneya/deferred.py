@@ -151,3 +151,11 @@ def all(*promises):
         promise.then(success_factory(i), d.reject)
 
     return d.promise
+
+
+def fromTwisted(twistedDeferred):
+    """Convert a twisted deferred to a promise."""
+
+    d = Deferred()
+    twistedDeferred.addCallbacks(d.resolve, d.reject)
+    return d.promise
