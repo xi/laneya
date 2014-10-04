@@ -1,6 +1,4 @@
-# flake8: noqa
-
 try:
-    import unittest2 as unittest
+    import unittest2 as unittest  # flake8: noqa
 except ImportError:
-    import unittest
+    import unittest  # flake8: noqa
