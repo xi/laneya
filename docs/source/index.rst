@@ -9,6 +9,7 @@ Contents
 
     quickstart
     protocol
+    actions
     deferred
 
 Indices and tables
