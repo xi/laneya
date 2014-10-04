@@ -29,6 +29,7 @@ class ServerProtocol(protocol.Protocol):
             return kwargs
         else:
             self.broadcastUpdate(action, **kwargs)
+            reactor.callLater(5, self.broadcastUpdate, action, **kwargs)
             return {}
 
 
