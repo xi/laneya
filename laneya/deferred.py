@@ -48,7 +48,7 @@ class Deferred(object):
             for d, callback, errback in self.promise._children:
                 if status == RESOLVED:
                     callback(value).then(d.resolve, d.reject)
-                elif status == REJECTED:
+                else:  # rejected
                     errback(value).then(d.resolve, d.reject)
         else:
             raise AlreadyDoneError
@@ -92,6 +92,10 @@ class Promise(object):
             d = Deferred()
             self._children.append((d, _callback, _errback))
             return d.promise
+
+    def _raise(self):
+        if self._status == REJECTED and isinstance(self._value, Exception):
+            raise self._value
 
 
 def when(value=None):
@@ -140,10 +144,7 @@ def all(*promises):
             data['count'] -= 1
 
             if data['count'] == 0:
-                try:
-                    d.resolve(data['results'])
-                except AlreadyDoneError:
-                    pass
+                d.resolve(data['results'])
         return success
 
     for i, promise in enumerate(promises):
