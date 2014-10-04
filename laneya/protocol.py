@@ -129,13 +129,21 @@ class Protocol(JSONProtocol):
 
         return self._sendResponse(key, 'success', **response)
 
+    def validate_message(self, message, expected_keys):
+        if sorted(message.keys()) != expected_keys:
+            log.err('Invalid message: %s' % message)
+            raise InvalidError
+
     def jsonReceived(self, message):
         if message['type'] == 'request':
+            self.validate_message(message, ['action', 'data', 'key', 'type'])
             self._requestReceived(
                 message['key'],
                 message['action'],
                 **message['data'])
+
         elif message['type'] == 'response':
+            self.validate_message(message, ['data', 'key', 'status', 'type'])
             key = message['key']
             if key in self._responseDeferreds:
                 response = {
@@ -147,7 +155,9 @@ class Protocol(JSONProtocol):
                     d.resolve(response)
                 else:
                     d.reject(response)
+
         elif message['type'] == 'update':
+            self.validate_message(message, ['action', 'data', 'type'])
             self.updateReceived(message['action'], **message['data'])
         else:
             log.err('Message type not known: %s' % message['type'])
