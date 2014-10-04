@@ -43,6 +43,9 @@ class TestDeferred(unittest.TestCase, shared.SpyMixin):
         with self.assertRaises(q.AlreadyDoneError):
             d.reject('bar')
 
+        d.resolve('bar', silent=True)
+        d.reject('bar', silent=True)
+
         self.assertCalledWith(spy, 'foo')
 
     def test_deferred_reject(self):
@@ -75,6 +78,9 @@ class TestDeferred(unittest.TestCase, shared.SpyMixin):
 
         with self.assertRaises(q.AlreadyDoneError):
             d.reject('bar')
+
+        d.resolve('bar', silent=True)
+        d.reject('bar', silent=True)
 
         self.assertCalledWith(spy, 'foo')
 
