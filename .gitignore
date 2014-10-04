@@ -4,6 +4,7 @@
 *.pyc
 .env
 .tox
+.cover
 *.egg-info
 *-orig
 docs/build
