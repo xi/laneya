@@ -12,6 +12,9 @@ class ServerProtocol(protocol.ServerProtocol):
     def requestReceived(self, user, action, **kwargs):  # TODO
         if action == 'echo':
             return kwargs
+        elif action == 'move':
+            self.factory.direction = kwargs['direction']
+            return {}
         else:
             self.broadcastUpdate(action, **kwargs)
             reactor.callLater(5, self.broadcastUpdate, action, **kwargs)
@@ -22,8 +25,26 @@ class Server(protocol.ServerProtocolFactory):
     def __init__(self):
         protocol.ServerProtocolFactory.__init__(self, ServerProtocol)
 
+        # TODO: should be set per user
+        self.direction = 'stop'
+        self.position_x = 0
+        self.position_y = 0
+
     def mainloop(self):
-        self.broadcastUpdate('echo', foo='mainloop')
+        if self.direction == 'north':
+            self.position_y -= 1
+        elif self.direction == 'east':
+            self.position_x += 1
+        elif self.direction == 'south':
+            self.position_y += 1
+        elif self.direction == 'west':
+            self.position_x -= 1
+        if self.direction != 'stop':
+            self.broadcastUpdate(
+                'position',
+                x=self.position_x,
+                y=self.position_y,
+                entity='example')
 
 
 def main():
