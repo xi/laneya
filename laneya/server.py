@@ -10,6 +10,9 @@ import protocol
 
 class ServerProtocol(protocol.ServerProtocol):
     def requestReceived(self, user, action, **kwargs):  # TODO
+        if user not in self.factory.users:
+            self.factory.users[user] = {}
+
         if action == 'echo':
             return kwargs
         elif action == 'move':
@@ -24,6 +27,7 @@ class ServerProtocol(protocol.ServerProtocol):
 class Server(protocol.ServerProtocolFactory):
     def __init__(self):
         protocol.ServerProtocolFactory.__init__(self, ServerProtocol)
+        self.users = {}
 
         # TODO: should be set per user
         self.direction = 'stop'
