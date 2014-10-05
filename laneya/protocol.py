@@ -66,6 +66,7 @@ import json
 
 from twisted.python import log
 from twisted.protocols.basic import NetstringReceiver
+from twisted.internet.protocol import Factory
 from twisted.internet import reactor
 
 import deferred as q
@@ -180,9 +181,24 @@ class ServerProtocol(BaseProtocol):
         self.sendJSON(data)
 
     def broadcastUpdate(self, action, **kwargs):
+        """See :py:meth:`ServerProtocolFactory.broadcastUpdate`."""
+        self.factory.broadcastUpdate(action, **kwargs)
+
+
+class ServerProtocolFactory(Factory):
+    """Factory for :py:class:`ServerProtocol`."""
+
+    def __init__(self, protocol):
+        self.protocol = protocol
+        self.connections = []
+
+    def buildProtocol(self, addr):
+        return self.protocol(self)
+
+    def broadcastUpdate(self, action, **kwargs):
         """Broadcast an update to all connected clients."""
 
-        for connection in self.factory.connections:
+        for connection in self.connections:
             connection._sendUpdate(action, **kwargs)
 
 
@@ -248,4 +264,10 @@ class ClientProtocol(BaseProtocol):
         return d.promise
 
 
-__all__ = ['InvalidError', 'IllegalError', 'ServerProtocol', 'ClientProtocol']
+__all__ = [
+    'InvalidError',
+    'IllegalError',
+    'ServerProtocol',
+    'ServerProtocolFactory',
+    'ClientProtocol',
+]

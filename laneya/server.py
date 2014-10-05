@@ -1,7 +1,6 @@
 import sys
 
 from twisted.python import log
-from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 
@@ -18,18 +17,10 @@ class ServerProtocol(protocol.ServerProtocol):
             return {}
 
 
-class ServerProtocolFactory(Factory):
-    def __init__(self):
-        self.connections = []
-
-    def buildProtocol(self, addr):
-        return ServerProtocol(self)
-
-
 def main():
     log.startLogging(sys.stdout)
     endpoint = TCP4ServerEndpoint(reactor, 5001)
-    endpoint.listen(ServerProtocolFactory())
+    endpoint.listen(protocol.ServerProtocolFactory(ServerProtocol))
     reactor.run()
 
 
