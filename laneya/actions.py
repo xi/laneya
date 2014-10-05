@@ -39,4 +39,7 @@ def position(x=None, y=None, entity=None):
 
 
 def logout():
-    """Delete the requesting user."""
+    """Delete the requesting user.
+
+    There is no explicit login.  The user is created on her initial request.
+    """
