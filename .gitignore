@@ -5,6 +5,7 @@
 .env
 .tox
 .cover
+.coverage
 *.egg-info
 *-orig
 docs/build
