@@ -9,10 +9,6 @@ import protocol
 import deferred as q
 
 
-def _print(s):
-    print(s)
-
-
 class ClientProtocol(protocol.ClientProtocol):
     def updateReceived(self, action, **kwargs):  # TODO
         print(action, kwargs)
@@ -23,12 +19,6 @@ class ClientProtocol(protocol.ClientProtocol):
 
 def connected(protocol):  # TODO
     protocol.setup('testuser')
-
-    protocol.sendRequest('echo', foo='bar')\
-        .then(_print, log.err)
-
-    protocol.sendRequest('other', foo='bar')\
-        .then(_print, log.err)
 
     protocol.move('south')
     reactor.callLater(2, lambda: protocol.move('west'))

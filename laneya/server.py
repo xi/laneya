@@ -25,9 +25,7 @@ class Server(protocol.ServerProtocolFactory):
             self.users[user] = User()
             print("login %s" % user)
 
-        if action == 'echo':
-            return kwargs
-        elif action == 'move':
+        if action == 'move':
             self.users[user].direction = kwargs['direction']
             return {}
         elif action == 'logout':
@@ -35,9 +33,7 @@ class Server(protocol.ServerProtocolFactory):
             print("logout %s" % user)
             return {}
         else:
-            self.broadcastUpdate(action, **kwargs)
-            reactor.callLater(5, self.broadcastUpdate, action, **kwargs)
-            return {}
+            raise protocol.InvalidError
 
     def mainloop(self):
         for key, user in self.users.iteritems():

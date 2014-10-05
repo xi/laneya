@@ -8,14 +8,6 @@ The actual processing of actions happens in the server and client.
 """
 
 
-def echo(foo=''):
-    """Example server action."""
-
-
-def other(foo=''):
-    """Example client action."""
-
-
 def move(direction=None):
     """Start moving in the defined direction.
 
