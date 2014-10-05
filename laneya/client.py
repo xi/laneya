@@ -14,13 +14,6 @@ def _print(s):
 
 
 class ClientProtocol(protocol.ClientProtocol):
-    def setup(self, user):
-        self.user = user
-
-    def sendRequest(self, action, **kwargs):
-        return protocol.ClientProtocol.sendRequest(
-            self, self.user, action, **kwargs)
-
     def updateReceived(self, action, **kwargs):  # TODO
         print(action, kwargs)
 

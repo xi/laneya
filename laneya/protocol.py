@@ -178,6 +178,10 @@ class ClientProtocol(BaseProtocol):
     def __init__(self):
         self._responseDeferreds = {}
 
+    def setup(self, user):
+        """Setup the user for this connection."""
+        self.user = user
+
     def jsonReceived(self, message):
         if message['type'] == 'response':
             self.validate_message(message, ['data', 'key', 'status', 'type'])
@@ -212,12 +216,13 @@ class ClientProtocol(BaseProtocol):
         except KeyError:
             pass
 
-    def sendRequest(self, user, action, **kwargs):
+    def sendRequest(self, action, **kwargs):
         """Send a request and get a promise yielding the response."""
+
         data = {
             'type': 'request',
             'key': generate_key(),
-            'user': user,
+            'user': self.user,
             'action': action,
             'data': kwargs,
         }
