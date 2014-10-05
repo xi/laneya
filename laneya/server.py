@@ -27,11 +27,9 @@ class Server(protocol.ServerProtocolFactory):
 
         if action == 'move':
             self.users[user].direction = kwargs['direction']
-            return {}
         elif action == 'logout':
             del self.users[user]
             print("logout %s" % user)
-            return {}
         else:
             raise protocol.InvalidError
 

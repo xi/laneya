@@ -144,6 +144,9 @@ class ServerProtocol(BaseProtocol):
             log.err(err)
             return self._sendResponse(key, 'internal', message=str(err))
 
+        if response is None:
+            response = {}
+
         return self._sendResponse(key, 'success', **response)
 
     def jsonReceived(self, message):
