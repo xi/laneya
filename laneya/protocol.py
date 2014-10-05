@@ -133,13 +133,9 @@ class ServerProtocol(BaseProtocol):
     def connectionLost(self, reason):
         self.factory.connections.remove(self)
 
-    def requestReceived(self, user, action, **kwargs):
-        """Overwrite this on the server implementation."""
-        raise NotImplementedError
-
     def _requestReceived(self, key, user, action, **data):
         try:
-            response = self.requestReceived(user, action, **data)
+            response = self.factory.requestReceived(user, action, **data)
         except InvalidError as err:
             return self._sendResponse(key, 'invalid', message=str(err))
         except IllegalError as err:
@@ -180,20 +176,19 @@ class ServerProtocol(BaseProtocol):
         }
         self.sendJSON(data)
 
-    def broadcastUpdate(self, action, **kwargs):
-        """See :py:meth:`ServerProtocolFactory.broadcastUpdate`."""
-        self.factory.broadcastUpdate(action, **kwargs)
-
 
 class ServerProtocolFactory(Factory):
     """Factory for :py:class:`ServerProtocol`."""
 
-    def __init__(self, protocol):
-        self.protocol = protocol
+    def __init__(self):
         self.connections = []
 
     def buildProtocol(self, addr):
-        return self.protocol(self)
+        return ServerProtocol(self)
+
+    def requestReceived(self, user, action, **kwargs):
+        """Overwrite this on the server implementation."""
+        raise NotImplementedError
 
     def broadcastUpdate(self, action, **kwargs):
         """Broadcast an update to all connected clients."""

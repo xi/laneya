@@ -15,31 +15,29 @@ class User(object):
         self.direction = direction
 
 
-class ServerProtocol(protocol.ServerProtocol):
+class Server(protocol.ServerProtocolFactory):
+    def __init__(self):
+        protocol.ServerProtocolFactory.__init__(self)
+        self.users = {}
+
     def requestReceived(self, user, action, **kwargs):  # TODO
-        if user not in self.factory.users:
-            self.factory.users[user] = User()
+        if user not in self.users:
+            self.users[user] = User()
             print("login %s" % user)
 
         if action == 'echo':
             return kwargs
         elif action == 'move':
-            self.factory.users[user].direction = kwargs['direction']
+            self.users[user].direction = kwargs['direction']
             return {}
         elif action == 'logout':
-            del self.factory.users[user]
+            del self.users[user]
             print("logout %s" % user)
             return {}
         else:
             self.broadcastUpdate(action, **kwargs)
             reactor.callLater(5, self.broadcastUpdate, action, **kwargs)
             return {}
-
-
-class Server(protocol.ServerProtocolFactory):
-    def __init__(self):
-        protocol.ServerProtocolFactory.__init__(self, ServerProtocol)
-        self.users = {}
 
     def mainloop(self):
         for key, user in self.users.iteritems():
