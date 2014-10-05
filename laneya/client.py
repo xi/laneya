@@ -6,7 +6,6 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
 
 import protocol
-import deferred as q
 
 
 def _print(s):
