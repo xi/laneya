@@ -8,7 +8,7 @@ from twisted.internet import reactor
 import protocol
 
 
-class ServerProtocol(protocol.Protocol):
+class ServerProtocol(protocol.ServerProtocol):
     def __init__(self, factory):
         self.factory = factory
 

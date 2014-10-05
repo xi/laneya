@@ -104,18 +104,27 @@ class JSONProtocol(NetstringReceiver):
         return self.sendString(json.dumps(data))
 
 
-class Protocol(JSONProtocol):
-    """Default implementation of the laneya protocol."""
+class BaseProtocol(JSONProtocol):
 
-    def __init__(self):
-        self._responseDeferreds = {}
+    def validate_message(self, message, expected_keys):
+        if sorted(message.keys()) != expected_keys:
+            log.err('Invalid message: %s' % message)
+            raise InvalidError
+
+    def validate_action(self, action, data):
+        try:
+            fn = getattr(actions, action)
+            fn(**data)
+        except:
+            log.err('Invalid action: %s %s' % (action, data))
+            raise InvalidError
+
+
+class ServerProtocol(BaseProtocol):
+    """Default implementation of the server protocol."""
 
     def requestReceived(self, user, action, **kwargs):
         """Overwrite this on the server implementation."""
-        raise NotImplementedError
-
-    def updateReceived(self, action, **kwargs):
-        """Overwrite this on the client implementation."""
         raise NotImplementedError
 
     def _requestReceived(self, key, user, action, **data):
@@ -131,19 +140,6 @@ class Protocol(JSONProtocol):
 
         return self._sendResponse(key, 'success', **response)
 
-    def validate_message(self, message, expected_keys):
-        if sorted(message.keys()) != expected_keys:
-            log.err('Invalid message: %s' % message)
-            raise InvalidError
-
-    def validate_action(self, action, data):
-        try:
-            fn = getattr(actions, action)
-            fn(**data)
-        except:
-            log.err('Invalid action: %s %s' % (action, data))
-            raise InvalidError
-
     def jsonReceived(self, message):
         if message['type'] == 'request':
             self.validate_message(
@@ -154,8 +150,36 @@ class Protocol(JSONProtocol):
                 message['user'],
                 message['action'],
                 **message['data'])
+        else:
+            log.err('Message type not known: %s' % message['type'])
 
-        elif message['type'] == 'response':
+    def _sendResponse(self, key, status, **kwargs):
+        data = {
+            'type': 'response',
+            'key': key,
+            'status': status,
+            'data': kwargs,
+        }
+        self.sendJSON(data)
+
+    def sendUpdate(self, action, **kwargs):
+        """Send an update."""
+        data = {
+            'type': 'update',
+            'action': action,
+            'data': kwargs,
+        }
+        self.sendJSON(data)
+
+
+class ClientProtocol(BaseProtocol):
+    """Default implementation of the client protocol."""
+
+    def __init__(self):
+        self._responseDeferreds = {}
+
+    def jsonReceived(self, message):
+        if message['type'] == 'response':
             self.validate_message(message, ['data', 'key', 'status', 'type'])
             key = message['key']
             if key in self._responseDeferreds:
@@ -176,6 +200,10 @@ class Protocol(JSONProtocol):
 
         else:
             log.err('Message type not known: %s' % message['type'])
+
+    def updateReceived(self, action, **kwargs):
+        """Overwrite this on the client implementation."""
+        raise NotImplementedError
 
     def _timeout(self, d, key):
         try:
@@ -200,23 +228,5 @@ class Protocol(JSONProtocol):
         reactor.callLater(10, lambda: self._timeout(d, data['key']))
         return d.promise
 
-    def _sendResponse(self, key, status, **kwargs):
-        data = {
-            'type': 'response',
-            'key': key,
-            'status': status,
-            'data': kwargs,
-        }
-        self.sendJSON(data)
 
-    def sendUpdate(self, action, **kwargs):
-        """Send an update."""
-        data = {
-            'type': 'update',
-            'action': action,
-            'data': kwargs,
-        }
-        self.sendJSON(data)
-
-
-__all__ = ['InvalidError', 'IllegalError', 'Protocol']
+__all__ = ['InvalidError', 'IllegalError', 'ServerProtocol', 'ClientProtocol']
