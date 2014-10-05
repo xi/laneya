@@ -12,11 +12,16 @@ class ServerProtocol(protocol.ServerProtocol):
     def requestReceived(self, user, action, **kwargs):  # TODO
         if user not in self.factory.users:
             self.factory.users[user] = {}
+            print("login %s" % user)
 
         if action == 'echo':
             return kwargs
         elif action == 'move':
             self.factory.direction = kwargs['direction']
+            return {}
+        elif action == 'logout':
+            del self.factory.users[user]
+            print("logout %s" % user)
             return {}
         else:
             self.broadcastUpdate(action, **kwargs)
