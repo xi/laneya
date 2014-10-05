@@ -36,3 +36,7 @@ def position(x=None, y=None, entity=None):
     """Set an entities position."""
     assert isinstance(x, int)
     assert isinstance(y, int)
+
+
+def logout():
+    """Delete the requesting user."""

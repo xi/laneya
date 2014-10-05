@@ -36,6 +36,8 @@ def connected(protocol):  # TODO
     reactor.callLater(6, lambda: protocol.move('east'))
     reactor.callLater(8, lambda: protocol.move('stop'))
 
+    reactor.callLater(10, lambda: protocol.sendRequest('logout'))
+
 
 def main():
     log.startLogging(sys.stdout)
