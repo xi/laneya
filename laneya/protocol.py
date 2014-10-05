@@ -123,6 +123,15 @@ class BaseProtocol(JSONProtocol):
 class ServerProtocol(BaseProtocol):
     """Default implementation of the server protocol."""
 
+    def __init__(self, factory):
+        self.factory = factory
+
+    def connectionMade(self):
+        self.factory.connections.append(self)
+
+    def connectionLost(self, reason):
+        self.factory.connections.remove(self)
+
     def requestReceived(self, user, action, **kwargs):
         """Overwrite this on the server implementation."""
         raise NotImplementedError
@@ -162,14 +171,19 @@ class ServerProtocol(BaseProtocol):
         }
         self.sendJSON(data)
 
-    def sendUpdate(self, action, **kwargs):
-        """Send an update."""
+    def _sendUpdate(self, action, **kwargs):
         data = {
             'type': 'update',
             'action': action,
             'data': kwargs,
         }
         self.sendJSON(data)
+
+    def broadcastUpdate(self, action, **kwargs):
+        """Broadcast an update to all connected clients."""
+
+        for connection in self.factory.connections:
+            connection._sendUpdate(action, **kwargs)
 
 
 class ClientProtocol(BaseProtocol):

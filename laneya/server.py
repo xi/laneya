@@ -9,21 +9,6 @@ import protocol
 
 
 class ServerProtocol(protocol.ServerProtocol):
-    def __init__(self, factory):
-        self.factory = factory
-
-    def connectionMade(self):
-        self.factory.connections.append(self)
-
-    def connectionLost(self, reason):
-        self.factory.connections.remove(self)
-
-    def broadcastUpdate(self, action, **kwargs):
-        """Broadcast an update to all connected clients."""
-
-        for connection in self.factory.connections:
-            connection.sendUpdate(action, **kwargs)
-
     def requestReceived(self, user, action, **kwargs):  # TODO
         if action == 'echo':
             return kwargs
