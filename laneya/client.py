@@ -6,6 +6,7 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
 
 import protocol
+import deferred as q
 
 
 def _print(s):
@@ -31,8 +32,7 @@ def main():
     log.startLogging(sys.stdout)
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 5001)
     d = endpoint.connect(Factory.forProtocol(ClientProtocol))
-    d.addCallbacks(connected, log.err)
-    # q.fromTwisted(d).then(connected, log.err)
+    q.fromTwisted(d).then(connected, log.err)
     reactor.run()
 
 
