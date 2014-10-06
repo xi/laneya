@@ -34,21 +34,25 @@ class Player(object):
 if __name__ == '__main__':
     scr = Screen(32, 100)
 
-    scr.border()
+    try:
+        scr.border()
 
-    player = Player(scr)
-    player.move('down')  # initial refresh
+        player = Player(scr)
+        player.move('down')  # initial refresh
 
-    while 1:
-        ch = scr.getch()
-        if ch == ord('h'):
-            player.move('left')
-        elif ch == ord('j'):
-            player.move('down')
-        elif ch == ord('k'):
-            player.move('up')
-        elif ch == ord('l'):
-            player.move('right')
-        elif ch == ord('q'):
-            scr.cleanup()
-            sys.exit()
+        while 1:
+            ch = scr.getch()
+            if ch == ord('h'):
+                player.move('left')
+            elif ch == ord('j'):
+                player.move('down')
+            elif ch == ord('k'):
+                player.move('up')
+            elif ch == ord('l'):
+                player.move('right')
+            elif ch == ord('q'):
+                scr.cleanup()
+                sys.exit()
+    except:
+        scr.cleanup()
+        raise
