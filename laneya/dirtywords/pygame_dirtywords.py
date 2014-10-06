@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import KEYDOWN
 
 import base
+from attr_string import AttrString
 
 
 class Screen(base.Screen):
@@ -11,14 +12,11 @@ class Screen(base.Screen):
         pygame.init()
         self.clock = pygame.time.Clock()
 
-        self.fg_color = pygame.Color('white')
-        self.bg_color = pygame.Color('black')
-
         self.font = pygame.font.SysFont('monospace', 10)
-        _width, self.fontheight = self.font.size(' ' * self.width)
-        _height = height * self.fontheight
+        self.fontwidth, self.fontheight = self.font.size(' ')
 
-        self.pygame_screen = pygame.display.set_mode((_width, _height))
+        self.pygame_screen = pygame.display.set_mode(
+            (self.fontwidth * width, self.fontheight * height))
 
     def getch(self):
         while True:
@@ -26,14 +24,21 @@ class Screen(base.Screen):
             if event.type == KEYDOWN:
                 return event.key
 
+    def _render_ch(self, ch):
+        ch = AttrString(ch)
+        self.font.set_bold(ch.bold)
+        self.font.set_italic(ch.italic)
+        self.font.set_underline(ch.underline)
+        return self.font.render(ch, True, ch.fg_color, ch.bg_color)
+
+    def putstr(self, y, x, s):
+        super(Screen, self).putstr(y, x, s)
+        for i, ch in enumerate(s):
+            self.pygame_screen.blit(
+                self._render_ch(ch),
+                ((x + i) * self.fontwidth, y * self.fontheight))
+
     def refresh(self):
-        self.pygame_screen.fill(self.bg_color)
-
-        for y in range(self.height):
-            s = ''.join(self.data[y])
-            rendered = self.font.render(s, True, self.fg_color, self.bg_color)
-            self.pygame_screen.blit(rendered, (0, y * self.fontheight))
-
         self.clock.tick()
         pygame.display.flip()
 
