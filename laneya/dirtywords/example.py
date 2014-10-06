@@ -8,6 +8,9 @@ except ImportError:
     except ImportError:
         from stupid_dirtywords import Screen
 
+from attr_string import italic
+from attr_string import blue
+
 
 class Player(object):
     def __init__(self, win):
@@ -27,7 +30,7 @@ class Player(object):
         elif direction == 'left':
             self.x -= 1
 
-        self.win.putstr(self.y, self.x, 'X')
+        self.win.putstr(self.y, self.x, italic(blue('X')))
         self.win.refresh()
 
 
