@@ -203,12 +203,15 @@ class ServerProtocolFactory(Factory):
 class ClientProtocol(BaseProtocol):
     """Default implementation of the client protocol."""
 
-    def __init__(self):
+    def __init__(self, factory):
+        self.factory = factory
         self._responseDeferreds = {}
 
-    def setup(self, user):
-        """Setup the user for this connection."""
-        self.user = user
+    def connectionMade(self):
+        self.factory.connections.append(self)
+
+    def connectionLost(self, reason):
+        self.factory.connections.remove(self)
 
     def jsonReceived(self, message):
         if message['type'] == 'response':
@@ -234,8 +237,7 @@ class ClientProtocol(BaseProtocol):
             log.err('Message type not known: %s' % message['type'])
 
     def updateReceived(self, action, **kwargs):
-        """Overwrite this on the client implementation."""
-        raise NotImplementedError
+        self.factory.updateReceived(action, **kwargs)
 
     def _timeout(self, d, key):
         try:
@@ -245,12 +247,10 @@ class ClientProtocol(BaseProtocol):
             pass
 
     def sendRequest(self, action, **kwargs):
-        """Send a request and get a promise yielding the response."""
-
         data = {
             'type': 'request',
             'key': generate_key(),
-            'user': self.user,
+            'user': self.factory.user,
             'action': action,
             'data': kwargs,
         }
@@ -262,10 +262,36 @@ class ClientProtocol(BaseProtocol):
         return d.promise
 
 
+class ClientProtocolFactory(Factory):
+    """Factory for :py:class:`ClientProtocol`.
+
+    We assume that this factory has only one active connection.
+    """
+
+    def __init__(self):
+        self.connections = []
+
+    def buildProtocol(self, addr):
+        return ClientProtocol(self)
+
+    def setup(self, user):
+        """Setup the user for all connections."""
+        self.user = user
+
+    def sendRequest(self, action, **kwargs):
+        """Send a request and get a promise yielding the response."""
+        self.connections[-1].sendRequest(action, **kwargs)
+
+    def updateReceived(self, action, **kwargs):
+        """Overwrite this on the client implementation."""
+        raise NotImplementedError
+
+
 __all__ = [
     'InvalidError',
     'IllegalError',
     'ServerProtocol',
     'ServerProtocolFactory',
     'ClientProtocol',
+    'ClientProtocolFactory',
 ]
