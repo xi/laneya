@@ -12,6 +12,7 @@ setup(
     packages=['laneya'],
     install_requires=[
         'twisted',
+        'dirtywords',
     ],
     entry_points={'console_scripts': [
         'laneya=laneya.client:main',
