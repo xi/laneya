@@ -4,3 +4,8 @@ python:
 install:
   - "pip install tox"
 script: tox
+os:
+  - linux
+  - osx
+notifications:
+  email: false
