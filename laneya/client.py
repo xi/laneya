@@ -1,6 +1,4 @@
-import sys
-
-from twisted.python import log
+# from twisted.python import log
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
 from twisted.internet import task
@@ -8,7 +6,6 @@ from twisted.internet import task
 from dirtywords import Screen
 
 import protocol
-import deferred as q
 
 screen = Screen(40, 60)
 screen.border()
@@ -52,7 +49,7 @@ def main():
     client = Client()
     client.setup('testuser')
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 5001)
-    d = endpoint.connect(client)
+    endpoint.connect(client)
 
     mainloop = task.LoopingCall(client.mainloop)
     mainloop.start(0.02)
