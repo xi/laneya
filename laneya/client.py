@@ -5,7 +5,7 @@ from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
 from twisted.internet import task
 
-from dirtywords.pygame_core import Screen
+from dirtywords import Screen
 
 import protocol
 import deferred as q
@@ -55,7 +55,7 @@ def main():
     d = endpoint.connect(client)
 
     mainloop = task.LoopingCall(client.mainloop)
-    mainloop.start(0.1)
+    mainloop.start(0.02)
 
     reactor.run()
 
