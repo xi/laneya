@@ -3,35 +3,60 @@ import sys
 from twisted.python import log
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from twisted.internet import reactor
+from twisted.internet import task
+
+from dirtywords import Screen
 
 import protocol
 import deferred as q
 
+screen = Screen(40, 60)
+screen.border()
+
 
 class Client(protocol.ClientProtocolFactory):
+    def __init__(self):
+        protocol.ClientProtocolFactory.__init__(self)
+        self.position_x = 0
+        self.position_y = 0
+
     def updateReceived(self, action, **kwargs):  # TODO
-        print(action, kwargs)
+        if action == 'position':
+            screen.delch(self.position_y, self.position_x)
+            self.position_x = kwargs['x']
+            self.position_y = kwargs['y']
+            screen.putstr(self.position_y, self.position_x, 'X')
+        screen.refresh()
 
     def move(self, direction):
         return self.sendRequest('move', direction=direction)
 
-    def connected(self, protocol):  # TODO
-        self.move('south')
-        reactor.callLater(2, lambda: self.move('west'))
-        reactor.callLater(4, lambda: self.move('north'))
-        reactor.callLater(6, lambda: self.move('east'))
-        reactor.callLater(8, lambda: self.move('stop'))
-
-        reactor.callLater(10, lambda: self.sendRequest('logout'))
+    def mainloop(self):  # TODO
+        for event in screen.get_key_events():
+            if event['key'] == ord('j'):
+                self.move('south' if event['type'] == 'keydown' else 'stop')
+            elif event['key'] == ord('k'):
+                self.move('north' if event['type'] == 'keydown' else 'stop')
+            elif event['key'] == ord('l'):
+                self.move('east' if event['type'] == 'keydown' else 'stop')
+            elif event['key'] == ord('h'):
+                self.move('west' if event['type'] == 'keydown' else 'stop')
+            elif event['key'] == ord('q'):
+                self.sendRequest('logout')
+                screen.cleanup()
+                reactor.stop()
 
 
 def main():
-    log.startLogging(sys.stdout)
+    # log.startLogging(sys.stdout)
     client = Client()
     client.setup('testuser')
     endpoint = TCP4ClientEndpoint(reactor, 'localhost', 5001)
     d = endpoint.connect(client)
-    q.fromTwisted(d).then(client.connected, log.err)
+
+    mainloop = task.LoopingCall(client.mainloop)
+    mainloop.start(0.02)
+
     reactor.run()
 
 
