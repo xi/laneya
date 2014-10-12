@@ -19,7 +19,7 @@ class Server(protocol.ServerProtocolFactory):
     def __init__(self):
         protocol.ServerProtocolFactory.__init__(self)
         self.users = {}
-        self.movable_layer = [[False for i in xrange(100)]for i in xrange(100)]
+        self.movable_layer = [[None for i in xrange(100)] for i in xrange(100)]
 
     def requestReceived(self, user, action, **kwargs):  # TODO
         if user not in self.users:
@@ -37,24 +37,13 @@ class Server(protocol.ServerProtocolFactory):
     def mainloop(self):
         for key, user in self.users.iteritems():
             if user.direction == 'north':
-                if collision_check(user.position_x, user.position_y-1):
-                    self.movable_layer[user.position_x][user.position_y] = False
-                    user.position_y -= 1
-                    self.movable_layer[user.position_x][user.position_y] = user
-                else:
-                    raise protocol.IllegalError
+                self.move_user(user, 0, -1)
             elif user.direction == 'east':
-                # self.movable_layer[user.position_x][user.position_y] = False
-                user.position_x += 1
-                # self.movable_layer[user.position_x][user.position_y] = user
+                self.move_user(user, 1, 0)
             elif user.direction == 'south':
-                # self.movable_layer[user.position_x][user.position_y] = False
-                user.position_y += 1
-                # self.movable_layer[user.position_x][user.position_y] = user
+                self.move_user(user, 0, 1)
             elif user.direction == 'west':
-                # self.movable_layer[user.position_x][user.position_y] = False
-                user.position_x -= 1
-                # self.movable_layer[user.position_x][user.position_y] = user
+                self.move_user(user, -1, 0)
             if user.direction != 'stop':
                 self.broadcastUpdate(
                     'position',
@@ -63,12 +52,16 @@ class Server(protocol.ServerProtocolFactory):
                     entity=key)
 
     def collision_check(self, new_x, new_y):
-        if self.movable_layer[newx][new_y] == False:
-            return True
-        else:
-            return False
+        return self.movable_layer[new_x][new_y] is None
 
-#  def move_user()
+    def move_user(self, user, dx, dy):
+        if self.collision_check(user.position_x, user.position_y - 1):
+            self.movable_layer[user.position_x][user.position_y] = None
+            user.position_x += dx
+            user.position_y += dy
+            self.movable_layer[user.position_x][user.position_y] = user
+        else:
+            raise protocol.IllegalError
 
 
 def main():
