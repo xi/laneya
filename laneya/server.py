@@ -19,6 +19,7 @@ class Server(protocol.ServerProtocolFactory):
     def __init__(self):
         protocol.ServerProtocolFactory.__init__(self)
         self.users = {}
+        self.movable_layer = [[False for i in xrange(100)]for i in xrange(100)]
 
     def requestReceived(self, user, action, **kwargs):  # TODO
         if user not in self.users:
@@ -36,19 +37,38 @@ class Server(protocol.ServerProtocolFactory):
     def mainloop(self):
         for key, user in self.users.iteritems():
             if user.direction == 'north':
-                user.position_y -= 1
+                if collision_check(user.position_x, user.position_y-1):
+                    self.movable_layer[user.position_x][user.position_y] = False
+                    user.position_y -= 1
+                    self.movable_layer[user.position_x][user.position_y] = user
+                else:
+                    raise protocol.IllegalError
             elif user.direction == 'east':
+                # self.movable_layer[user.position_x][user.position_y] = False
                 user.position_x += 1
+                # self.movable_layer[user.position_x][user.position_y] = user
             elif user.direction == 'south':
+                # self.movable_layer[user.position_x][user.position_y] = False
                 user.position_y += 1
+                # self.movable_layer[user.position_x][user.position_y] = user
             elif user.direction == 'west':
+                # self.movable_layer[user.position_x][user.position_y] = False
                 user.position_x -= 1
+                # self.movable_layer[user.position_x][user.position_y] = user
             if user.direction != 'stop':
                 self.broadcastUpdate(
                     'position',
                     x=user.position_x,
                     y=user.position_y,
                     entity=key)
+
+    def collision_check(self, new_x, new_y):
+        if self.movable_layer[newx][new_y] == False:
+            return True
+        else:
+            return False
+
+#  def move_user()
 
 
 def main():
