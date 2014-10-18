@@ -37,8 +37,7 @@ class Client(protocol.ClientProtocolFactory):
                 self.move('west' if event['type'] == 'keydown' else 'stop')
             elif event['key'] == ord('q'):
                 self.send_request('logout')
-                screen.cleanup()
-                self.loop.close()
+                raise KeyboardInterrupt
 
 
 def main():
@@ -52,7 +51,13 @@ def main():
     mainloop = protocol.LoopingCall(loop, client.mainloop)
     mainloop.start(0.02)
 
-    loop.run_forever()
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        screen.cleanup()
+        loop.close()
 
 
 if __name__ == '__main__':  # pragma: nocover
