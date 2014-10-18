@@ -70,7 +70,7 @@ def main():
     endpoint = TCP4ServerEndpoint(reactor, 5001)
     endpoint.listen(server)
 
-    mainloop = task.LoopingCall(server.mainloop)
+    mainloop = protocol.LoopingCall(loop, server.mainloop)
     mainloop.start(0.1)
 
     reactor.run()

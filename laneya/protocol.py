@@ -92,6 +92,33 @@ def generate_key():
     return key
 
 
+class LoopingCall(object):
+    def __init__(self, loop, fn, *args, **kwargs):
+        self.loop = loop
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.running = False
+        self.interval = None
+
+    def start(self, interval, now=True):
+        self.interval = interval
+        self.running = True
+
+        if now:
+            self._wrapped()
+        else:
+            self.loop.call_later(self.interval, self._wrapped)
+
+    def stop(self):
+        self.running = False
+
+    def _wrapped(self):
+        if self.running:
+            self.loop.call_later(self.interval, self._wrapped)
+            self.fn(*self.args, **self.kwargs)
+
+
 class JSONProtocol(NetstringReceiver):
     """Send and receive JSON objects."""
 
