@@ -1,7 +1,7 @@
 """Client/Server communication protocol.
 
 This module implements a base class for the server/client communication
-protocol based on :py:mod:`twisted`.
+protocol based on :py:mod:`asyncio`.
 
 laneya is a network based multiplayer game with a central server and multiple
 clients that connect to that server.  To avoid cheating, all game logic happens

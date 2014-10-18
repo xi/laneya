@@ -11,7 +11,7 @@ setup(
     author_email='tobias.bengfort@posteo.de',
     packages=['laneya'],
     install_requires=[
-        'twisted',
+        'trollius',
         'dirtywords',
     ],
     entry_points={'console_scripts': [
@@ -21,7 +21,6 @@ setup(
     license='GPLv2+',
     classifiers=[
         'Development Status :: 1 - Planning',
-        'Framework :: Twisted',
         'Intended Audience :: End Users/Desktop',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
