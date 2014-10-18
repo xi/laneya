@@ -26,7 +26,7 @@ class Client(protocol.ClientProtocolFactory):
         return self.send_request('move', direction=direction)
 
     def mainloop(self):  # TODO
-        for event in screen.get_key_events():
+        for event in list(screen.get_key_events()):
             if event['key'] == ord('j'):
                 self.move('south' if event['type'] == 'keydown' else 'stop')
             elif event['key'] == ord('k'):
