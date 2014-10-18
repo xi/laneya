@@ -65,8 +65,7 @@ Update
 import json
 import logging
 
-from twisted.internet.protocol import Factory
-from twisted.internet import reactor
+import trollius as asyncio
 
 import deferred as q
 import actions
@@ -248,7 +247,7 @@ class ServerProtocol(BaseProtocol):
         self.send_json(data)
 
 
-class ServerProtocolFactory(Factory):
+class ServerProtocolFactory(object):
     """Factory for :py:class:`ServerProtocol`."""
 
     def __init__(self):
@@ -333,7 +332,7 @@ class ClientProtocol(BaseProtocol):
         return d.promise
 
 
-class ClientProtocolFactory(Factory):
+class ClientProtocolFactory(object):
     """Factory for :py:class:`ClientProtocol`.
 
     We assume that this factory has only one active connection.

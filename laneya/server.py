@@ -1,8 +1,4 @@
-import sys
-
-from twisted.internet.endpoints import TCP4ServerEndpoint
-from twisted.internet import reactor
-from twisted.internet import task
+import trollius as asyncio
 
 import protocol
 
@@ -64,15 +60,21 @@ class Server(protocol.ServerProtocolFactory):
 
 
 def main():
-    log.startLogging(sys.stdout)
+    loop = asyncio.get_event_loop()
+
     server = Server()
-    endpoint = TCP4ServerEndpoint(reactor, 5001)
-    endpoint.listen(server)
+    coro = loop.create_server(server.build_protocol, 'localhost', 5001)
+    s = loop.run_until_complete(coro)
 
     mainloop = protocol.LoopingCall(loop, server.mainloop)
     mainloop.start(0.1)
 
-    reactor.run()
+    try:
+        loop.run_forever()
+    finally:
+        s.close()
+        loop.run_until_complete(s.wait_closed())
+        loop.close()
 
 
 if __name__ == '__main__':  # pragma: nocover
