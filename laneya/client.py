@@ -11,8 +11,8 @@ screen.border()
 
 
 class Client(protocol.ClientProtocolFactory):
-    def __init__(self):
-        protocol.ClientProtocolFactory.__init__(self)
+    def __init__(self, loop):
+        super(Client, self).__init__(loop)
         self.position_x = 0
         self.position_y = 0
 
@@ -40,7 +40,7 @@ class Client(protocol.ClientProtocolFactory):
             elif event['key'] == ord('q'):
                 self.send_request('logout')
                 screen.cleanup()
-                reactor.stop()
+                self.loop.close()
 
 
 def main():

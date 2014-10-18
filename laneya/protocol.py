@@ -328,8 +328,8 @@ class ClientProtocol(BaseProtocol):
         self.send_json(data)
 
         d = q.Deferred()
-        reactor.callLater(2, lambda: self._timeout(d, data['key']))
         self._response_deferreds[data['key']] = d
+        self.factory.loop.call_later(2, self._timeout, d, data['key'])
         return d.promise
 
 
@@ -339,7 +339,8 @@ class ClientProtocolFactory(Factory):
     We assume that this factory has only one active connection.
     """
 
-    def __init__(self):
+    def __init__(self, loop):
+        self.loop = loop
         self.connections = []
 
     def build_protocol(self):
