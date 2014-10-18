@@ -1,6 +1,5 @@
 import sys
 
-from twisted.python import log
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.internet import reactor
 from twisted.internet import task

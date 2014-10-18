@@ -63,14 +63,17 @@ Update
 
 
 import json
+import logging
 
-from twisted.python import log
 from twisted.internet.protocol import Factory
 from twisted.internet import reactor
 
 import deferred as q
 import actions
 
+logger = logging.getLogger('laneya')
+logger.addHandler(logging.StreamHandler())
+logging.getLogger('trollius').addHandler(logging.StreamHandler())
 
 key = 0
 
@@ -172,7 +175,7 @@ class BaseProtocol(JSONProtocol):
 
     def validate_message(self, message, expected_keys):
         if sorted(message.keys()) != expected_keys:
-            log.err('Invalid message: %s' % message)
+            logger.error('Invalid message: %s' % message)
             raise InvalidError
 
     def validate_action(self, action, data):
@@ -180,7 +183,7 @@ class BaseProtocol(JSONProtocol):
             fn = getattr(actions, action)
             fn(**data)
         except:
-            log.err('Invalid action: %s %s' % (action, data))
+            logger.error('Invalid action: %s %s' % (action, data))
             raise InvalidError
 
 
@@ -206,7 +209,7 @@ class ServerProtocol(BaseProtocol):
         except IllegalError as err:
             return self._send_response(key, 'illegal', message=str(err))
         except Exception as err:
-            log.err(err)
+            logger.error(err)
             return self._send_response(key, 'internal', message=str(err))
 
         if response is None:
@@ -225,7 +228,7 @@ class ServerProtocol(BaseProtocol):
                 message['action'],
                 **message['data'])
         else:
-            log.err('Message type not known: %s' % message['type'])
+            logger.error('Message type not known: %s' % message['type'])
 
     def _send_response(self, key, status, **kwargs):
         data = {
@@ -302,7 +305,7 @@ class ClientProtocol(BaseProtocol):
             self.update_received(message['action'], **message['data'])
 
         else:
-            log.err('Message type not known: %s' % message['type'])
+            logger.error('Message type not known: %s' % message['type'])
 
     def update_received(self, action, **kwargs):
         self.factory.update_received(action, **kwargs)
