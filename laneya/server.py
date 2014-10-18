@@ -21,7 +21,7 @@ class Server(protocol.ServerProtocolFactory):
         self.users = {}
         self.movable_layer = [[None for i in xrange(100)] for i in xrange(100)]
 
-    def requestReceived(self, user, action, **kwargs):  # TODO
+    def request_received(self, user, action, **kwargs):  # TODO
         if user not in self.users:
             self.users[user] = User()
             print("login %s" % user)
@@ -45,7 +45,7 @@ class Server(protocol.ServerProtocolFactory):
             elif user.direction == 'west':
                 self.move_user(user, -1, 0)
             if user.direction != 'stop':
-                self.broadcastUpdate(
+                self.broadcast_update(
                     'position',
                     x=user.position_x,
                     y=user.position_y,

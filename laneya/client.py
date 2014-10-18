@@ -17,7 +17,7 @@ class Client(protocol.ClientProtocolFactory):
         self.position_x = 0
         self.position_y = 0
 
-    def updateReceived(self, action, **kwargs):  # TODO
+    def update_received(self, action, **kwargs):  # TODO
         if action == 'position':
             screen.delch(self.position_y, self.position_x)
             self.position_x = kwargs['x']
@@ -26,7 +26,7 @@ class Client(protocol.ClientProtocolFactory):
         screen.refresh()
 
     def move(self, direction):
-        return self.sendRequest('move', direction=direction)
+        return self.send_request('move', direction=direction)
 
     def mainloop(self):  # TODO
         for event in screen.get_key_events():
@@ -39,7 +39,7 @@ class Client(protocol.ClientProtocolFactory):
             elif event['key'] == ord('h'):
                 self.move('west' if event['type'] == 'keydown' else 'stop')
             elif event['key'] == ord('q'):
-                self.sendRequest('logout')
+                self.send_request('logout')
                 screen.cleanup()
                 reactor.stop()
 

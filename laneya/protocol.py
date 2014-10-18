@@ -95,14 +95,14 @@ def generate_key():
 class JSONProtocol(NetstringReceiver):
     """Send and receive JSON objects."""
 
-    def jsonReceived(self, data):
+    def json_received(self, data):
         raise NotImplementedError
 
-    def stringReceived(self, s):
-        return self.jsonReceived(json.loads(s))
+    def string_received(self, s):
+        return self.json_received(json.loads(s))
 
-    def sendJSON(self, data):
-        return self.sendString(json.dumps(data))
+    def send_json(self, data):
+        return self.send_string(json.dumps(data))
 
 
 class BaseProtocol(JSONProtocol):
@@ -127,34 +127,34 @@ class ServerProtocol(BaseProtocol):
     def __init__(self, factory):
         self.factory = factory
 
-    def connectionMade(self):
+    def connection_made(self, transport):
         self.factory.connections.append(self)
 
-    def connectionLost(self, reason):
+    def connection_lost(self, reason):
         self.factory.connections.remove(self)
 
-    def _requestReceived(self, key, user, action, **data):
+    def _request_received(self, key, user, action, **data):
         try:
-            response = self.factory.requestReceived(user, action, **data)
+            response = self.factory.request_received(user, action, **data)
         except InvalidError as err:
-            return self._sendResponse(key, 'invalid', message=str(err))
+            return self._send_response(key, 'invalid', message=str(err))
         except IllegalError as err:
-            return self._sendResponse(key, 'illegal', message=str(err))
+            return self._send_response(key, 'illegal', message=str(err))
         except Exception as err:
             log.err(err)
-            return self._sendResponse(key, 'internal', message=str(err))
+            return self._send_response(key, 'internal', message=str(err))
 
         if response is None:
             response = {}
 
-        return self._sendResponse(key, 'success', **response)
+        return self._send_response(key, 'success', **response)
 
-    def jsonReceived(self, message):
+    def json_received(self, message):
         if message['type'] == 'request':
             self.validate_message(
                 message, ['action', 'data', 'key', 'type', 'user'])
             self.validate_action(message['action'], message['data'])
-            self._requestReceived(
+            self._request_received(
                 message['key'],
                 message['user'],
                 message['action'],
@@ -162,22 +162,22 @@ class ServerProtocol(BaseProtocol):
         else:
             log.err('Message type not known: %s' % message['type'])
 
-    def _sendResponse(self, key, status, **kwargs):
+    def _send_response(self, key, status, **kwargs):
         data = {
             'type': 'response',
             'key': key,
             'status': status,
             'data': kwargs,
         }
-        self.sendJSON(data)
+        self.send_json(data)
 
-    def _sendUpdate(self, action, **kwargs):
+    def _send_update(self, action, **kwargs):
         data = {
             'type': 'update',
             'action': action,
             'data': kwargs,
         }
-        self.sendJSON(data)
+        self.send_json(data)
 
 
 class ServerProtocolFactory(Factory):
@@ -186,18 +186,18 @@ class ServerProtocolFactory(Factory):
     def __init__(self):
         self.connections = []
 
-    def buildProtocol(self, addr):
+    def build_protocol(self):
         return ServerProtocol(self)
 
-    def requestReceived(self, user, action, **kwargs):
+    def request_received(self, user, action, **kwargs):
         """Overwrite this on the server implementation."""
         raise NotImplementedError
 
-    def broadcastUpdate(self, action, **kwargs):
+    def broadcast_update(self, action, **kwargs):
         """Broadcast an update to all connected clients."""
 
         for connection in self.connections:
-            connection._sendUpdate(action, **kwargs)
+            connection._send_update(action, **kwargs)
 
 
 class ClientProtocol(BaseProtocol):
@@ -205,25 +205,25 @@ class ClientProtocol(BaseProtocol):
 
     def __init__(self, factory):
         self.factory = factory
-        self._responseDeferreds = {}
+        self._response_deferreds = {}
 
-    def connectionMade(self):
+    def connection_made(self, transport):
         self.factory.connections.append(self)
-        self.factory.connectionMade()
+        self.factory.connection_made()
 
-    def connectionLost(self, reason):
+    def connection_lost(self, reason):
         self.factory.connections.remove(self)
 
-    def jsonReceived(self, message):
+    def json_received(self, message):
         if message['type'] == 'response':
             self.validate_message(message, ['data', 'key', 'status', 'type'])
             key = message['key']
-            if key in self._responseDeferreds:
+            if key in self._response_deferreds:
                 response = {
                     'status': message['status'],
                     'data': message['data'],
                 }
-                d = self._responseDeferreds.pop(key)
+                d = self._response_deferreds.pop(key)
                 if message['status'] == 'success':
                     d.resolve(response)
                 else:
@@ -232,22 +232,22 @@ class ClientProtocol(BaseProtocol):
         elif message['type'] == 'update':
             self.validate_message(message, ['action', 'data', 'type'])
             self.validate_action(message['action'], message['data'])
-            self.updateReceived(message['action'], **message['data'])
+            self.update_received(message['action'], **message['data'])
 
         else:
             log.err('Message type not known: %s' % message['type'])
 
-    def updateReceived(self, action, **kwargs):
-        self.factory.updateReceived(action, **kwargs)
+    def update_received(self, action, **kwargs):
+        self.factory.update_received(action, **kwargs)
 
     def _timeout(self, d, key):
         try:
             d.reject('timeout', silent=True)
-            del self._responseDeferreds[key]
+            del self._response_deferreds[key]
         except KeyError:
             pass
 
-    def sendRequest(self, action, **kwargs):
+    def send_request(self, action, **kwargs):
         data = {
             'type': 'request',
             'key': generate_key(),
@@ -255,11 +255,11 @@ class ClientProtocol(BaseProtocol):
             'action': action,
             'data': kwargs,
         }
-        self.sendJSON(data)
+        self.send_json(data)
 
         d = q.Deferred()
-        self._responseDeferreds[data['key']] = d
         reactor.callLater(2, lambda: self._timeout(d, data['key']))
+        self._response_deferreds[data['key']] = d
         return d.promise
 
 
@@ -272,22 +272,22 @@ class ClientProtocolFactory(Factory):
     def __init__(self):
         self.connections = []
 
-    def buildProtocol(self, addr):
+    def build_protocol(self):
         return ClientProtocol(self)
 
     def setup(self, user):
         """Setup the user for all connections."""
         self.user = user
 
-    def sendRequest(self, action, **kwargs):
+    def send_request(self, action, **kwargs):
         """Send a request and get a promise yielding the response."""
-        return self.connections[-1].sendRequest(action, **kwargs)
+        return self.connections[-1].send_request(action, **kwargs)
 
-    def updateReceived(self, action, **kwargs):
+    def update_received(self, action, **kwargs):
         """Overwrite this on the client implementation."""
         raise NotImplementedError
 
-    def connectionMade(self):
+    def connection_made(self):
         """Overwrite this on the client implementation."""
         pass
 
