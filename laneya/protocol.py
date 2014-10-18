@@ -65,7 +65,6 @@ Update
 import json
 
 from twisted.python import log
-from twisted.protocols.basic import NetstringReceiver
 from twisted.internet.protocol import Factory
 from twisted.internet import reactor
 
@@ -119,6 +118,43 @@ class LoopingCall(object):
             self.fn(*self.args, **self.kwargs)
 
 
+class NetstringReceiver(asyncio.Protocol):
+    """ protocol that sends and receives netstrings.
+
+    See http://cr.yp.to/proto/netstrings.txt for the specification of
+    netstrings.
+
+    """
+    def __init__(self):
+        self.__buffer = ''
+        self.transport = None
+
+    def connection_made(self, transport):
+        self.transport = transport
+
+    def string_received(self, data):
+        raise NotImplementedError
+
+    def data_received(self, data):
+        # FIXME: invalid data should not crash the server
+        self.__buffer += data
+
+        while ':' in self.__buffer:
+            length, remainder = self.__buffer.split(':', 1)
+            l = int(length)
+
+            if len(remainder) > int(length):
+                assert remainder[l] == ','
+                s = remainder[:int(length)]
+                self.__buffer = self.__buffer[len('%i:%s,' % (l, s)):]
+                self.string_received(s)
+            else:
+                break
+
+    def send_string(self, data):
+        self.transport.write('%i:%s,' % (len(data), data))
+
+
 class JSONProtocol(NetstringReceiver):
     """Send and receive JSON objects."""
 
@@ -152,9 +188,11 @@ class ServerProtocol(BaseProtocol):
     """Default implementation of the server protocol."""
 
     def __init__(self, factory):
+        super(ServerProtocol, self).__init__()
         self.factory = factory
 
     def connection_made(self, transport):
+        super(ServerProtocol, self).connection_made(transport)
         self.factory.connections.append(self)
 
     def connection_lost(self, reason):
@@ -231,10 +269,12 @@ class ClientProtocol(BaseProtocol):
     """Default implementation of the client protocol."""
 
     def __init__(self, factory):
+        super(ClientProtocol, self).__init__()
         self.factory = factory
         self._response_deferreds = {}
 
     def connection_made(self, transport):
+        super(ClientProtocol, self).connection_made(transport)
         self.factory.connections.append(self)
         self.factory.connection_made()
 
