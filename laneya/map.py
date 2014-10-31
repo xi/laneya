@@ -1,3 +1,5 @@
+import random
+
 import protocol
 
 
@@ -18,6 +20,7 @@ class Map(object):
         self.server = server
         self.sprites = {}
         self.movable_layer = [[None for i in xrange(100)] for i in xrange(100)]
+        self.ghost = Ghost('example', self, 15, 15)
 
     def step(self):
         """Update this map and all of its sprites.
@@ -107,6 +110,13 @@ class MovingSprite(Sprite):
 
 class User(MovingSprite):
     """Sprite representing a user."""
+
+
+class Ghost(MovingSprite):
+    def step(self):
+        self.direction = random.choice(
+            ['north', 'east', 'south', 'west', 'stop'])
+        super(Ghost, self).step()
 
 
 __all__ = ['Map', 'Sprite', 'MovingSprite', 'User']
