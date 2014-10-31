@@ -258,7 +258,7 @@ class ClientProtocol(BaseProtocol):
 
         d = q.Deferred()
         self._responseDeferreds[data['key']] = d
-        reactor.callLater(10, lambda: self._timeout(d, data['key']))
+        reactor.callLater(2, lambda: self._timeout(d, data['key']))
         return d.promise
 
 
