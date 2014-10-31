@@ -48,8 +48,6 @@ class Map(object):
                 x=sprite.x,
                 y=sprite.y,
                 entity=sprite.id)
-        else:
-            raise protocol.IllegalError
 
 
 class Sprite(object):
