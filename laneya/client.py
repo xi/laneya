@@ -14,15 +14,20 @@ screen.border()
 class Client(protocol.ClientProtocolFactory):
     def __init__(self):
         protocol.ClientProtocolFactory.__init__(self)
-        self.position_x = 0
-        self.position_y = 0
+        self.sprites = {}
 
     def updateReceived(self, action, **kwargs):  # TODO
         if action == 'position':
-            screen.delch(self.position_y, self.position_x)
-            self.position_x = kwargs['x']
-            self.position_y = kwargs['y']
-            screen.putstr(self.position_y, self.position_x, 'X')
+            entity = kwargs['entity']
+            if entity not in self.sprites:
+                self.sprites[entity] = {}
+            else:
+                screen.delch(
+                    self.sprites[entity]['y'],
+                    self.sprites[entity]['x'])
+            self.sprites[entity]['x'] = kwargs['x']
+            self.sprites[entity]['y'] = kwargs['y']
+            screen.putstr(kwargs['y'], kwargs['x'], entity[0])
         screen.refresh()
 
     def move(self, direction):
