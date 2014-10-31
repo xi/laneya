@@ -280,7 +280,7 @@ class ClientProtocolFactory(Factory):
 
     def sendRequest(self, action, **kwargs):
         """Send a request and get a promise yielding the response."""
-        self.connections[-1].sendRequest(action, **kwargs)
+        return self.connections[-1].sendRequest(action, **kwargs)
 
     def updateReceived(self, action, **kwargs):
         """Overwrite this on the client implementation."""
