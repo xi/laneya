@@ -39,8 +39,10 @@ class Map(object):
     def move_sprite(self, sprite, dx, dy):
         """Move a sprite."""
         if self.is_collision_free(sprite.x + dx, sprite.y + dy):
+            self.movable_layer[sprite.x][sprite.y] = None
             sprite.x += dx
             sprite.y += dy
+            self.movable_layer[sprite.x][sprite.y] = sprite
             self.server.broadcastUpdate(
                 'position',
                 x=sprite.x,
