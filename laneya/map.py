@@ -54,6 +54,14 @@ class Map(object):
                 y=sprite.y,
                 entity=sprite.id)
 
+    def encode(self):
+        return {
+            'floor_layer': self.floor_layer,
+        }
+
+    def decode(self, data):
+        self.floor_layer = data['floor_layer']
+
 
 class Sprite(object):
     """Simple base class for visible game objects."""

@@ -26,6 +26,8 @@ class Server(protocol.ServerProtocolFactory):
             self.users[user].kill()
             del self.users[user]
             print("logout %s" % user)
+        elif action == 'get_map':
+            return self.map.encode()
         else:
             raise protocol.InvalidError
 
