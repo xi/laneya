@@ -25,7 +25,78 @@ class Map(object):
             [None for i in xrange(height)] for i in xrange(width)]
         self.floor_layer = [
             [None for i in xrange(height)] for i in xrange(width)]
+        self.generate()
         self.ghost = Ghost('example', self, 15, 15)
+
+    def generate(self):
+        rooms = []
+
+        # make sure user and ghost are inside of a room
+        rooms.append({
+            'x_min': 5,
+            'x_max': 20,
+            'y_min': 5,
+            'y_max': 20,
+        })
+
+        for i in range(2000):
+            x1 = random.randint(1, self.width - 2)
+            x2 = random.randint(1, self.width - 2)
+            y1 = random.randint(1, self.height - 2)
+            y2 = random.randint(1, self.height - 2)
+
+            room = {
+                'x_min': min(x1, x2),
+                'x_max': max(x1, x2),
+                'y_min': min(y1, y2),
+                'y_max': max(y1, y2),
+            }
+
+            collision_free = lambda other: (
+                room['x_min'] > other['x_max'] + 1 or
+                room['x_max'] < other['x_min'] - 1 or
+                room['y_min'] > other['y_max'] + 1 or
+                room['y_max'] < other['y_min'] - 1)
+
+            if (room['x_max'] - room['x_min'] > 2 and
+                    room['y_max'] - room['y_min'] > 2):
+                if all((collision_free(other) for other in rooms)):
+                    rooms.append(room)
+
+        in_room = lambda x, y, room: (
+            x >= room['x_min'] and
+            x <= room['x_max'] and
+            y >= room['y_min'] and
+            y <= room['y_max'])
+
+        # carve rooms
+        for x in range(self.width):
+            for y in range(self.height):
+                if any((in_room(x, y, room) for room in rooms)):
+                    self.floor_layer[x][y] = 'floor'
+                else:
+                    self.floor_layer[x][y] = 'wall'
+
+        # carve paths
+        for i, room in enumerate(rooms):
+            if i != 0:
+                last = rooms[i - 1]
+
+                x_center = (room['x_max'] + room['x_min']) / 2
+                y_center = (room['y_max'] + room['y_min']) / 2
+                last_x_center = (last['x_max'] + last['x_min']) / 2
+                last_y_center = (last['y_max'] + last['y_min']) / 2
+
+                x_min = min(x_center, last_x_center)
+                x_max = max(x_center, last_x_center) + 1
+                y_min = min(y_center, last_y_center)
+                y_max = max(y_center, last_y_center) + 1
+
+                for x in range(x_min, x_max):
+                    self.floor_layer[x][last_y_center] = 'floor'
+
+                for y in range(y_min, y_max):
+                    self.floor_layer[x_center][y] = 'floor'
 
     def step(self):
         """Update this map and all of its sprites.
