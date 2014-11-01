@@ -1,7 +1,5 @@
 import random
 
-import protocol
-
 
 class Map(object):
     """A singel map containing sprites.
