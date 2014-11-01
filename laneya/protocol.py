@@ -209,6 +209,7 @@ class ClientProtocol(BaseProtocol):
 
     def connectionMade(self):
         self.factory.connections.append(self)
+        self.factory.connectionMade()
 
     def connectionLost(self, reason):
         self.factory.connections.remove(self)
@@ -285,6 +286,10 @@ class ClientProtocolFactory(Factory):
     def updateReceived(self, action, **kwargs):
         """Overwrite this on the client implementation."""
         raise NotImplementedError
+
+    def connectionMade(self):
+        """Overwrite this on the client implementation."""
+        pass
 
 
 __all__ = [
