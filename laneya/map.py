@@ -23,6 +23,8 @@ class Map(object):
         self.sprites = {}
         self.movable_layer = [
             [None for i in xrange(height)] for i in xrange(width)]
+        self.floor_layer = [
+            [None for i in xrange(height)] for i in xrange(width)]
         self.ghost = Ghost('example', self, 15, 15)
 
     def step(self):
