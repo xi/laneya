@@ -16,10 +16,13 @@ class Map(object):
     one for sprites (e.g. :py:meth:`move_sprite`).
 
     """
-    def __init__(self, server):
+    def __init__(self, server, width=60, height=40):
         self.server = server
+        self.width = width
+        self.height = height
         self.sprites = {}
-        self.movable_layer = [[None for i in xrange(100)] for i in xrange(100)]
+        self.movable_layer = [
+            [None for i in xrange(height)] for i in xrange(width)]
         self.ghost = Ghost('example', self, 15, 15)
 
     def step(self):
