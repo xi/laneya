@@ -110,7 +110,9 @@ class Map(object):
 
     def is_collision_free(self, x, y):
         """Check whether a sprite can move to field (x, y)."""
-        return self.movable_layer[x][y] is None
+        return (
+            self.movable_layer[x][y] is None and
+            self.floor_layer[x][y] == 'floor')
 
     def move_sprite(self, sprite, dx, dy):
         """Move a sprite."""
