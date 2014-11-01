@@ -21,10 +21,30 @@ class Client(protocol.ClientProtocolFactory):
             .then(lambda response: self.render_floor(response['data']))
 
     def render_floor(self, data):
-        for x, column in enumerate(data['floor_layer']):
+        floor_layer = data['floor_layer']
+        width = len(floor_layer)
+        height = len(floor_layer[0])
+
+        is_wall = lambda x, y: (
+            x < 0 or x >= width or
+            y < 0 or y >= height or
+            floor_layer[x][y] == 'wall')
+
+        sorrunded = lambda x, y: (
+            is_wall(x - 1, y) and
+            is_wall(x - 1, y - 1) and
+            is_wall(x - 1, y + 1) and
+            is_wall(x, y - 1) and
+            is_wall(x + 1, y) and
+            is_wall(x, y + 1) and
+            is_wall(x + 1, y - 1) and
+            is_wall(x + 1, y + 1))
+
+        for x, column in enumerate(floor_layer):
             for y, field in enumerate(column):
                 if field == 'wall':
-                    screen.putstr(y, x, '#')
+                    if not sorrunded(x, y):
+                        screen.putstr(y, x, '#')
 
     def updateReceived(self, action, **kwargs):  # TODO
         if action == 'position':
