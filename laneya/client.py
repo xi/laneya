@@ -16,6 +16,16 @@ class Client(protocol.ClientProtocolFactory):
         protocol.ClientProtocolFactory.__init__(self)
         self.sprites = {}
 
+    def connectionMade(self):
+        self.sendRequest('get_map', map_id='example_map')\
+            .then(lambda response: self.render_floor(response['data']))
+
+    def render_floor(self, data):
+        for x, column in enumerate(data['floor_layer']):
+            for y, field in enumerate(column):
+                if field == 'wall':
+                    screen.putstr(y, x, '#')
+
     def updateReceived(self, action, **kwargs):  # TODO
         if action == 'position':
             entity = kwargs['entity']
