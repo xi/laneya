@@ -6,6 +6,7 @@ from twisted.internet import task
 from dirtywords import Screen
 
 import protocol
+from field_of_vision import field_of_vision
 
 screen = Screen(40, 60)
 screen.border()
@@ -21,14 +22,14 @@ class Client(protocol.ClientProtocolFactory):
             .then(lambda response: self.render_floor(response['data']))
 
     def render_floor(self, data):
-        floor_layer = data['floor_layer']
-        width = len(floor_layer)
-        height = len(floor_layer[0])
+        self.floor_layer = data['floor_layer']
+        width = len(self.floor_layer)
+        height = len(self.floor_layer[0])
 
         is_wall = lambda x, y: (
             x < 0 or x >= width or
             y < 0 or y >= height or
-            floor_layer[x][y] == 'wall')
+            self.floor_layer[x][y] == 'wall')
 
         sorrunded = lambda x, y: (
             is_wall(x - 1, y) and
@@ -40,7 +41,7 @@ class Client(protocol.ClientProtocolFactory):
             is_wall(x + 1, y - 1) and
             is_wall(x + 1, y + 1))
 
-        for x, column in enumerate(floor_layer):
+        for x, column in enumerate(self.floor_layer):
             for y, field in enumerate(column):
                 if field == 'wall':
                     if not sorrunded(x, y):
@@ -58,6 +59,18 @@ class Client(protocol.ClientProtocolFactory):
             self.sprites[entity]['x'] = kwargs['x']
             self.sprites[entity]['y'] = kwargs['y']
             screen.putstr(kwargs['y'], kwargs['x'], entity[0])
+        for x, y in field_of_vision(
+                self.sprites[entity]['x'],
+                self.sprites[entity]['y'],
+                10,
+                lambda x, y: (
+                    x < 0 or
+                    x >= len(self.floor_layer) or
+                    y < 0 or
+                    y >= len(self.floor_layer[0]) or
+                    self.floor_layer[x][y] != 'floor')):
+            screen.putstr(y, x, '.')
+        self.render_floor({'floor_layer': self.floor_layer})
         screen.refresh()
 
     def move(self, direction):
