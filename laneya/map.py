@@ -1,3 +1,5 @@
+import os
+import json
 import random
 
 
@@ -8,10 +10,11 @@ class MapManager(object):
     coordinates. At any combination of coordinates, there can be only one map.
 
     """
-    def __init__(self, server, width=60, height=40):
+    def __init__(self, server, width=60, height=40, persist=True):
         self.server = server
         self.width = width
         self.height = height
+        self.persist = persist
         self.store = {}
 
     def generate(self, X, Y, Z):
@@ -93,9 +96,19 @@ class MapManager(object):
         """Get a map.  If it does not exist yet, generate one."""
 
         key = '%i:%i:%i' % (X, Y, Z)
+        filename = 'maps/%s.map' % key
 
         if key not in self.store:
-            _map = self.generate(X, Y, Z)
+            if not os.path.exists('maps'):
+                os.mkdir('maps')
+
+            if os.path.exists(filename):
+                _map = Map(self.server, self.width, self.height)
+                _map.load(filename)
+            else:
+                _map = self.generate(X, Y, Z)
+                _map.dump(filename)
+
             self.store[key] = _map
 
         return self.store[key]
@@ -161,6 +174,14 @@ class Map(object):
 
     def decode(self, data):
         self.floor_layer = data['floor_layer']
+
+    def dump(self, filename):
+        with open(filename, 'w') as fh:
+            return json.dump(self.encode(), fh)
+
+    def load(self, filename):
+        with open(filename) as fh:
+            self.decode(json.load(fh))
 
 
 class Sprite(object):
