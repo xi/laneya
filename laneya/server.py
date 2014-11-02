@@ -6,18 +6,19 @@ from twisted.internet import reactor
 from twisted.internet import task
 
 import protocol
-from map import Map, User
+from map import MapManager, User
 
 
 class Server(protocol.ServerProtocolFactory):
     def __init__(self):
         protocol.ServerProtocolFactory.__init__(self)
         self.users = {}
-        self.map = Map(self)  # TODO: more than one map
+        self.map_manager = MapManager(self, 60, 40)
 
     def requestReceived(self, user, action, **kwargs):  # TODO
         if user not in self.users:
-            self.users[user] = User(user, self.map, 10, 10)
+            initial_map = self.map_manager.get(0, 0, 0)
+            self.users[user] = User(user, initial_map, 10, 10)
             print("login %s" % user)
 
         if action == 'move':
@@ -27,7 +28,7 @@ class Server(protocol.ServerProtocolFactory):
             del self.users[user]
             print("logout %s" % user)
         elif action == 'get_map':
-            return self.map.encode()
+            return self.users[user].map.encode()
         else:
             raise protocol.InvalidError
 

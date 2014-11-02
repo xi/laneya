@@ -1,32 +1,23 @@
 import random
 
 
-class Map(object):
-    """A singel map containing sprites.
+class MapManager(object):
+    """Manager that takes care of generating and storing all maps.
 
-    The map object takes care of managing all sprites within one map. As only
-    very few actions involve multiple maps (e.g. moving from one map to
-    another) this covers a lot of the game logic.
-
-    The passed server is used to send updates to the clients.
-
-    Map objects expose an API for the server (e.g. :py:meth:`step`) and another
-    one for sprites (e.g. :py:meth:`move_sprite`).
+    All maps have the same width/height and identified by X, Y and Z
+    coordinates. At any combination of coordinates, there can be only one map.
 
     """
     def __init__(self, server, width=60, height=40):
         self.server = server
         self.width = width
         self.height = height
-        self.sprites = {}
-        self.movable_layer = [
-            [None for i in xrange(height)] for i in xrange(width)]
-        self.floor_layer = [
-            [None for i in xrange(height)] for i in xrange(width)]
-        self.generate()
-        self.ghost = Ghost('example', self, 15, 15)
+        self.store = {}
 
-    def generate(self):
+    def generate(self, X, Y, Z):
+        """Generate a new map."""
+
+        _map = Map(self.server, self.width, self.height)
         rooms = []
 
         # make sure user and ghost are inside of a room
@@ -71,9 +62,9 @@ class Map(object):
         for x in range(self.width):
             for y in range(self.height):
                 if any((in_room(x, y, room) for room in rooms)):
-                    self.floor_layer[x][y] = 'floor'
+                    _map.floor_layer[x][y] = 'floor'
                 else:
-                    self.floor_layer[x][y] = 'wall'
+                    _map.floor_layer[x][y] = 'wall'
 
         # carve paths
         for i, room in enumerate(rooms):
@@ -91,10 +82,48 @@ class Map(object):
                 y_max = max(y_center, last_y_center) + 1
 
                 for x in range(x_min, x_max):
-                    self.floor_layer[x][last_y_center] = 'floor'
+                    _map.floor_layer[x][last_y_center] = 'floor'
 
                 for y in range(y_min, y_max):
-                    self.floor_layer[x_center][y] = 'floor'
+                    _map.floor_layer[x_center][y] = 'floor'
+
+        return _map
+
+    def get(self, X, Y, Z):
+        """Get a map.  If it does not exist yet, generate one."""
+
+        key = '%i:%i:%i' % (X, Y, Z)
+
+        if key not in self.store:
+            _map = self.generate(X, Y, Z)
+            self.store[key] = _map
+
+        return self.store[key]
+
+
+class Map(object):
+    """A singel map containing sprites.
+
+    The map object takes care of managing all sprites within one map. As only
+    very few actions involve multiple maps (e.g. moving from one map to
+    another) this covers a lot of the game logic.
+
+    The passed server is used to send updates to the clients.
+
+    Map objects expose an API for the server (e.g. :py:meth:`step`) and another
+    one for sprites (e.g. :py:meth:`move_sprite`).
+
+    """
+    def __init__(self, server, width, height):
+        self.server = server
+        self.width = width
+        self.height = height
+        self.sprites = {}
+        self.movable_layer = [
+            [None for i in xrange(height)] for i in xrange(width)]
+        self.floor_layer = [
+            [None for i in xrange(height)] for i in xrange(width)]
+        self.ghost = Ghost('example', self, 15, 15)
 
     def step(self):
         """Update this map and all of its sprites.
@@ -203,4 +232,4 @@ class Ghost(MovingSprite):
         super(Ghost, self).step()
 
 
-__all__ = ['Map', 'Sprite', 'MovingSprite', 'User']
+__all__ = ['MapManager', 'Map', 'Sprite', 'MovingSprite', 'User']
