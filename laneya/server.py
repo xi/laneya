@@ -1,62 +1,39 @@
 import trollius as asyncio
 
 import protocol
-
-
-class User(object):
-    def __init__(self, position_x=0, position_y=0, direction='stop'):
-        self.position_x = position_x
-        self.position_y = position_y
-        self.direction = direction
+from map import MapManager, User
 
 
 class Server(protocol.ServerProtocolFactory):
     def __init__(self):
         protocol.ServerProtocolFactory.__init__(self)
         self.users = {}
-        self.movable_layer = [[None for i in xrange(100)] for i in xrange(100)]
+        self.map_manager = MapManager(self, 60, 40)
 
     def request_received(self, user, action, **kwargs):  # TODO
         if user not in self.users:
-            self.users[user] = User()
+            initial_map = self.map_manager.get(0, 0, 0)
+            self.users[user] = User(user, initial_map, 10, 10)
             print("login %s" % user)
 
         if action == 'move':
             self.users[user].direction = kwargs['direction']
         elif action == 'logout':
+            self.users[user].kill()
             del self.users[user]
             print("logout %s" % user)
+        elif action == 'get_map':
+            return self.users[user].map.encode()
         else:
             raise protocol.InvalidError
 
     def mainloop(self):
-        for key, user in self.users.iteritems():
-            if user.direction == 'north':
-                self.move_user(user, 0, -1)
-            elif user.direction == 'east':
-                self.move_user(user, 1, 0)
-            elif user.direction == 'south':
-                self.move_user(user, 0, 1)
-            elif user.direction == 'west':
-                self.move_user(user, -1, 0)
-            if user.direction != 'stop':
-                self.broadcast_update(
-                    'position',
-                    x=user.position_x,
-                    y=user.position_y,
-                    entity=key)
+        # only the maps with users in them get updated
+        for _map in self.get_active_maps():
+            _map.step()
 
-    def collision_check(self, new_x, new_y):
-        return self.movable_layer[new_x][new_y] is None
-
-    def move_user(self, user, dx, dy):
-        if self.collision_check(user.position_x, user.position_y - 1):
-            self.movable_layer[user.position_x][user.position_y] = None
-            user.position_x += dx
-            user.position_y += dy
-            self.movable_layer[user.position_x][user.position_y] = user
-        else:
-            raise protocol.IllegalError
+    def get_active_maps(self):
+        return set([user.map for user in self.users.itervalues()])
 
 
 def main():

@@ -11,15 +11,50 @@ screen.border()
 class Client(protocol.ClientProtocolFactory):
     def __init__(self, loop):
         super(Client, self).__init__(loop)
-        self.position_x = 0
-        self.position_y = 0
+        self.sprites = {}
+
+    def connection_made(self):
+        self.sendRequest('get_map', map_id='example_map')\
+            .then(lambda response: self.render_floor(response['data']))
+
+    def render_floor(self, data):
+        floor_layer = data['floor_layer']
+        width = len(floor_layer)
+        height = len(floor_layer[0])
+
+        is_wall = lambda x, y: (
+            x < 0 or x >= width or
+            y < 0 or y >= height or
+            floor_layer[x][y] == 'wall')
+
+        sorrunded = lambda x, y: (
+            is_wall(x - 1, y) and
+            is_wall(x - 1, y - 1) and
+            is_wall(x - 1, y + 1) and
+            is_wall(x, y - 1) and
+            is_wall(x + 1, y) and
+            is_wall(x, y + 1) and
+            is_wall(x + 1, y - 1) and
+            is_wall(x + 1, y + 1))
+
+        for x, column in enumerate(floor_layer):
+            for y, field in enumerate(column):
+                if field == 'wall':
+                    if not sorrunded(x, y):
+                        screen.putstr(y, x, '#')
 
     def update_received(self, action, **kwargs):  # TODO
         if action == 'position':
-            screen.delch(self.position_y, self.position_x)
-            self.position_x = kwargs['x']
-            self.position_y = kwargs['y']
-            screen.putstr(self.position_y, self.position_x, 'X')
+            entity = kwargs['entity']
+            if entity not in self.sprites:
+                self.sprites[entity] = {}
+            else:
+                screen.delch(
+                    self.sprites[entity]['y'],
+                    self.sprites[entity]['x'])
+            self.sprites[entity]['x'] = kwargs['x']
+            self.sprites[entity]['y'] = kwargs['y']
+            screen.putstr(kwargs['y'], kwargs['x'], entity[0])
         screen.refresh()
 
     def move(self, direction):

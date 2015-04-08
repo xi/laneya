@@ -10,6 +10,7 @@ Contents
     quickstart
     protocol
     actions
+    map
     deferred
 
 Indices and tables

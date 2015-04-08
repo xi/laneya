@@ -35,3 +35,8 @@ def logout():
 
     There is no explicit login.  The user is created on her initial request.
     """
+
+
+def get_map(map_id):
+    """Ask the server to send a serialisation of the specified map. """
+    pass
