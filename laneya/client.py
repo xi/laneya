@@ -14,7 +14,7 @@ class Client(protocol.ClientProtocolFactory):
         self.sprites = {}
 
     def connection_made(self):
-        self.sendRequest('get_map', map_id='example_map')\
+        self.send_request('get_map', map_id='example_map')\
             .then(lambda response: self.render_floor(response['data']))
 
     def render_floor(self, data):

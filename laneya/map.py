@@ -161,7 +161,7 @@ class Map(object):
             sprite.x += dx
             sprite.y += dy
             self.movable_layer[sprite.x][sprite.y] = sprite
-            self.server.broadcastUpdate(
+            self.server.broadcast_update(
                 'position',
                 x=sprite.x,
                 y=sprite.y,
