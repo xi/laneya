@@ -1,4 +1,7 @@
-import trollius as asyncio
+try:
+    import asyncio
+except ImportError:
+    import trollius as asyncio
 
 from . import protocol
 from .map import MapManager, User
@@ -6,7 +9,7 @@ from .map import MapManager, User
 
 class Server(protocol.ServerProtocolFactory):
     def __init__(self):
-        protocol.ServerProtocolFactory.__init__(self)
+        super(Server, self).__init__()
         self.users = {}
         self.map_manager = MapManager(self, 60, 40)
 
@@ -14,14 +17,14 @@ class Server(protocol.ServerProtocolFactory):
         if user not in self.users:
             initial_map = self.map_manager.get(0, 0, 0)
             self.users[user] = User(user, initial_map, 10, 10)
-            print("login %s" % user)
+            print('login %s' % user)
 
         if action == 'move':
             self.users[user].direction = kwargs['direction']
         elif action == 'logout':
             self.users[user].kill()
             del self.users[user]
-            print("logout %s" % user)
+            print('logout %s' % user)
         elif action == 'get_map':
             return self.users[user].map.encode()
         else:
@@ -33,7 +36,7 @@ class Server(protocol.ServerProtocolFactory):
             _map.step()
 
     def get_active_maps(self):
-        return set([user.map for user in self.users.values()])
+        return set(user.map for user in self.users.values())
 
 
 def main():

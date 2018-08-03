@@ -65,7 +65,10 @@ Update
 import json
 import logging
 
-import trollius as asyncio
+try:
+    import asyncio
+except ImportError:
+    import trollius as asyncio
 
 from . import promise as q
 from . import actions
@@ -121,7 +124,7 @@ class LoopingCall(object):
 
 
 class NetstringReceiver(asyncio.Protocol):
-    """ protocol that sends and receives netstrings.
+    """Protocol that sends and receives netstrings.
 
     See http://cr.yp.to/proto/netstrings.txt for the specification of
     netstrings.
@@ -181,7 +184,7 @@ class BaseProtocol(JSONProtocol):
         try:
             fn = getattr(actions, action)
             fn(**data)
-        except:
+        except Exception:
             logger.error('Invalid action: %s %s' % (action, data))
             raise InvalidError
 

@@ -3,6 +3,24 @@ import json
 import random
 
 
+def collision_free(room, other):
+    return (
+        room['x_min'] > other['x_max'] + 1 or
+        room['x_max'] < other['x_min'] - 1 or
+        room['y_min'] > other['y_max'] + 1 or
+        room['y_max'] < other['y_min'] - 1
+    )
+
+
+def in_room(x, y, room):
+    return (
+        x >= room['x_min'] and
+        x <= room['x_max'] and
+        y >= room['y_min'] and
+        y <= room['y_max']
+    )
+
+
 class MapManager(object):
     """Manager that takes care of generating and storing all maps.
 
@@ -17,10 +35,7 @@ class MapManager(object):
         self.persist = persist
         self.store = {}
 
-    def generate(self, X, Y, Z):
-        """Generate a new map."""
-
-        _map = Map(self.server, self.width, self.height)
+    def generate_rooms(self):
         rooms = []
 
         # make sure user and ghost are inside of a room
@@ -44,26 +59,18 @@ class MapManager(object):
                 'y_max': max(y1, y2),
             }
 
-            def collision_free(other):
-                return (
-                    room['x_min'] > other['x_max'] + 1 or
-                    room['x_max'] < other['x_min'] - 1 or
-                    room['y_min'] > other['y_max'] + 1 or
-                    room['y_max'] < other['y_min'] - 1
-                )
-
             if (room['x_max'] - room['x_min'] > 2 and
                     room['y_max'] - room['y_min'] > 2):
-                if all((collision_free(other) for other in rooms)):
+                if all(collision_free(room, other) for other in rooms):
                     rooms.append(room)
 
-        def in_room(x, y, room):
-            return (
-                x >= room['x_min'] and
-                x <= room['x_max'] and
-                y >= room['y_min'] and
-                y <= room['y_max']
-            )
+        return rooms
+
+    def generate(self, X, Y, Z):
+        """Generate a new map."""
+
+        _map = Map(self.server, self.width, self.height)
+        rooms = self.generate_rooms()
 
         # carve rooms
         for x in range(self.width):
