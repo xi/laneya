@@ -67,8 +67,8 @@ import logging
 
 import trollius as asyncio
 
-import deferred as q
-import actions
+from . import deferred as q
+from . import actions
 
 logger = logging.getLogger('laneya')
 logger.addHandler(logging.StreamHandler())

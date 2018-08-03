@@ -1,7 +1,7 @@
 import trollius as asyncio
 
-import protocol
-from map import MapManager, User
+from . import protocol
+from .map import MapManager, User
 
 
 class Server(protocol.ServerProtocolFactory):
@@ -33,7 +33,7 @@ class Server(protocol.ServerProtocolFactory):
             _map.step()
 
     def get_active_maps(self):
-        return set([user.map for user in self.users.itervalues()])
+        return set([user.map for user in self.users.values()])
 
 
 def main():

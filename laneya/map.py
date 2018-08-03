@@ -149,7 +149,7 @@ class Map(object):
         should call this method once per mainloop cycle.
 
         """
-        for sprite in self.sprites.itervalues():
+        for sprite in self.sprites.values():
             sprite.step()
 
     def is_collision_free(self, x, y):

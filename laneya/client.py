@@ -2,7 +2,7 @@ import trollius as asyncio
 
 from dirtywords import Screen
 
-import protocol
+from . import protocol
 
 screen = Screen(40, 60)
 screen.border()
