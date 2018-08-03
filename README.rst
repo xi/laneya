@@ -8,8 +8,7 @@ Setup development environment
 
 Execute the following commands::
 
-  sudo apt-get install python python-virtualenv
-  virtualenv .env
+  python -m venv .env
   . .env/bin/activate
   python setup.py develop
 
@@ -39,4 +38,4 @@ Alternatively you can run the tests manually::
   pip install flake8 nose coverage
   flake8
   nosetests
-  xdg-open .cover/index.html
+  xdg-open cover/index.html

@@ -4,7 +4,7 @@
 *.pyc
 .env
 .tox
-.cover
+cover
 .coverage
 *.egg-info
 *-orig
