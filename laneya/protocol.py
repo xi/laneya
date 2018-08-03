@@ -131,7 +131,7 @@ class NetstringReceiver(asyncio.Protocol):
 
     """
     def __init__(self):
-        self.__buffer = ''
+        self.__buffer = b''
         self.transport = None
 
     def connection_made(self, transport):
@@ -144,20 +144,21 @@ class NetstringReceiver(asyncio.Protocol):
         # FIXME: invalid data should not crash the server
         self.__buffer += data
 
-        while ':' in self.__buffer:
-            length, remainder = self.__buffer.split(':', 1)
+        while b':' in self.__buffer:
+            length, remainder = self.__buffer.split(b':', 1)
             length = int(length)
 
             if len(remainder) > length:
-                assert remainder[length] == ','
+                assert remainder[length] == ord(b',')
                 s = remainder[:length]
-                self.__buffer = self.__buffer[len('%i:%s,' % (length, s)):]
+                self.__buffer = self.__buffer[len(b'%i:%s,' % (length, s)):]
                 self.string_received(s)
             else:
                 break
 
     def send_string(self, data):
-        self.transport.write('%i:%s,' % (len(data), data))
+        b = data.encode('utf8')
+        self.transport.write(b'%i:%s,' % (len(b), b))
 
 
 class JSONProtocol(NetstringReceiver):
@@ -167,7 +168,8 @@ class JSONProtocol(NetstringReceiver):
         raise NotImplementedError
 
     def string_received(self, s):
-        return self.json_received(json.loads(s))
+        data = json.loads(s.decode('utf8'))
+        return self.json_received(data)
 
     def send_json(self, data):
         return self.send_string(json.dumps(data))
