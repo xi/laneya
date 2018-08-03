@@ -22,20 +22,24 @@ class Client(protocol.ClientProtocolFactory):
         width = len(floor_layer)
         height = len(floor_layer[0])
 
-        is_wall = lambda x, y: (
-            x < 0 or x >= width or
-            y < 0 or y >= height or
-            floor_layer[x][y] == 'wall')
+        def is_wall(x, y):
+            return (
+                x < 0 or x >= width or
+                y < 0 or y >= height or
+                floor_layer[x][y] == 'wall'
+            )
 
-        sorrunded = lambda x, y: (
-            is_wall(x - 1, y) and
-            is_wall(x - 1, y - 1) and
-            is_wall(x - 1, y + 1) and
-            is_wall(x, y - 1) and
-            is_wall(x + 1, y) and
-            is_wall(x, y + 1) and
-            is_wall(x + 1, y - 1) and
-            is_wall(x + 1, y + 1))
+        def sorrunded(x, y):
+            return (
+                is_wall(x - 1, y) and
+                is_wall(x - 1, y - 1) and
+                is_wall(x - 1, y + 1) and
+                is_wall(x, y - 1) and
+                is_wall(x + 1, y) and
+                is_wall(x, y + 1) and
+                is_wall(x + 1, y - 1) and
+                is_wall(x + 1, y + 1)
+            )
 
         for x, column in enumerate(floor_layer):
             for y, field in enumerate(column):

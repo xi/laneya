@@ -38,5 +38,5 @@ def logout():
 
 
 def get_map(map_id):
-    """Ask the server to send a serialisation of the specified map. """
+    """Ask the server to send a serialisation of the specified map."""
     pass

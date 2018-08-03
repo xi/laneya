@@ -143,12 +143,12 @@ class NetstringReceiver(asyncio.Protocol):
 
         while ':' in self.__buffer:
             length, remainder = self.__buffer.split(':', 1)
-            l = int(length)
+            length = int(length)
 
-            if len(remainder) > int(length):
-                assert remainder[l] == ','
-                s = remainder[:int(length)]
-                self.__buffer = self.__buffer[len('%i:%s,' % (l, s)):]
+            if len(remainder) > length:
+                assert remainder[length] == ','
+                s = remainder[:length]
+                self.__buffer = self.__buffer[len('%i:%s,' % (length, s)):]
                 self.string_received(s)
             else:
                 break

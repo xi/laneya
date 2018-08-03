@@ -44,22 +44,26 @@ class MapManager(object):
                 'y_max': max(y1, y2),
             }
 
-            collision_free = lambda other: (
-                room['x_min'] > other['x_max'] + 1 or
-                room['x_max'] < other['x_min'] - 1 or
-                room['y_min'] > other['y_max'] + 1 or
-                room['y_max'] < other['y_min'] - 1)
+            def collision_free(other):
+                return (
+                    room['x_min'] > other['x_max'] + 1 or
+                    room['x_max'] < other['x_min'] - 1 or
+                    room['y_min'] > other['y_max'] + 1 or
+                    room['y_max'] < other['y_min'] - 1
+                )
 
             if (room['x_max'] - room['x_min'] > 2 and
                     room['y_max'] - room['y_min'] > 2):
                 if all((collision_free(other) for other in rooms)):
                     rooms.append(room)
 
-        in_room = lambda x, y, room: (
-            x >= room['x_min'] and
-            x <= room['x_max'] and
-            y >= room['y_min'] and
-            y <= room['y_max'])
+        def in_room(x, y, room):
+            return (
+                x >= room['x_min'] and
+                x <= room['x_max'] and
+                y >= room['y_min'] and
+                y <= room['y_max']
+            )
 
         # carve rooms
         for x in range(self.width):
@@ -133,9 +137,9 @@ class Map(object):
         self.height = height
         self.sprites = {}
         self.movable_layer = [
-            [None for i in xrange(height)] for i in xrange(width)]
+            [None for i in range(height)] for i in range(width)]
         self.floor_layer = [
-            [None for i in xrange(height)] for i in xrange(width)]
+            [None for i in range(height)] for i in range(width)]
         self.ghost = Ghost('example', self, 15, 15)
 
     def step(self):
