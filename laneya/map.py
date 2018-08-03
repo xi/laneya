@@ -85,10 +85,10 @@ class MapManager(object):
             if i != 0:
                 last = rooms[i - 1]
 
-                x_center = (room['x_max'] + room['x_min']) / 2
-                y_center = (room['y_max'] + room['y_min']) / 2
-                last_x_center = (last['x_max'] + last['x_min']) / 2
-                last_y_center = (last['y_max'] + last['y_min']) / 2
+                x_center = (room['x_max'] + room['x_min']) // 2
+                y_center = (room['y_max'] + room['y_min']) // 2
+                last_x_center = (last['x_max'] + last['x_min']) // 2
+                last_y_center = (last['y_max'] + last['y_min']) // 2
 
                 x_min = min(x_center, last_x_center)
                 x_max = max(x_center, last_x_center) + 1
