@@ -11,7 +11,6 @@ setup(
     author_email='tobias.bengfort@posteo.de',
     packages=['laneya'],
     install_requires=[
-        'trollius',
         'dirtywords',
     ],
     entry_points={'console_scripts': [

@@ -1,9 +1,5 @@
-try:
-    import asyncio
-except ImportError:
-    import trollius as asyncio
-
 from . import protocol
+from .protocol import asyncio
 from .map import MapManager, User
 
 
