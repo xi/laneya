@@ -49,6 +49,8 @@ def main():
     mainloop = protocol.LoopingCall(loop, server.mainloop)
     mainloop.start(0.1)
 
+    print('laneyad started on port localhost:5001')
+
     try:
         loop.run_forever()
     finally:
