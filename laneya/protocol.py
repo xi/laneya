@@ -67,7 +67,7 @@ import logging
 
 import trollius as asyncio
 
-from . import deferred as q
+from . import promise as q
 from . import actions
 
 logger = logging.getLogger('laneya')
@@ -273,7 +273,7 @@ class ClientProtocol(BaseProtocol):
     def __init__(self, factory):
         super(ClientProtocol, self).__init__()
         self.factory = factory
-        self._response_deferreds = {}
+        self._response_promises = {}
 
     def connection_made(self, transport):
         super(ClientProtocol, self).connection_made(transport)
@@ -287,16 +287,16 @@ class ClientProtocol(BaseProtocol):
         if message['type'] == 'response':
             self.validate_message(message, ['data', 'key', 'status', 'type'])
             key = message['key']
-            if key in self._response_deferreds:
+            if key in self._response_promises:
                 response = {
                     'status': message['status'],
                     'data': message['data'],
                 }
-                d = self._response_deferreds.pop(key)
+                promise = self._response_promises.pop(key)
                 if message['status'] == 'success':
-                    d.resolve(response)
+                    promise.resolve(response)
                 else:
-                    d.reject(response)
+                    promise.reject(response)
 
         elif message['type'] == 'update':
             self.validate_message(message, ['action', 'data', 'type'])
@@ -309,10 +309,10 @@ class ClientProtocol(BaseProtocol):
     def update_received(self, action, **kwargs):
         self.factory.update_received(action, **kwargs)
 
-    def _timeout(self, d, key):
+    def _timeout(self, promise, key):
         try:
-            d.reject('timeout', silent=True)
-            del self._response_deferreds[key]
+            promise.reject('timeout')
+            del self._response_promises[key]
         except KeyError:
             pass
 
@@ -326,10 +326,10 @@ class ClientProtocol(BaseProtocol):
         }
         self.send_json(data)
 
-        d = q.Deferred()
-        self._response_deferreds[data['key']] = d
-        self.factory.loop.call_later(2, self._timeout, d, data['key'])
-        return d.promise
+        promise = q.Promise()
+        self._response_promises[data['key']] = promise
+        self.factory.loop.call_later(2, self._timeout, promise, data['key'])
+        return promise
 
 
 class ClientProtocolFactory(object):
